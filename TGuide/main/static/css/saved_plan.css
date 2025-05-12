@@ -1,0 +1,418 @@
+/* General Styling */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: url('/static/images/bg1.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #333;
+  }
+
+  canvas {
+    top: 0;
+    left: 0;
+    position:fixed;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    z-index: -80;
+  }
+  
+
+  /* Body Styling */
+  .body {
+    width: 100%;
+    
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Container Styling */
+  .container {
+    width: 90%;
+    max-width: 900px;
+    
+    background: #1e90ff;
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    margin: 100px auto;
+    padding: 20px;
+    position: relative;
+    transform: rotateX(0deg) rotateY(0deg);
+    transition: transform 0.2s ease-out;
+    cursor: grab;
+  }
+
+  .container:active {
+    cursor: grabbing;
+  }
+
+  /* Top Section */
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .details h3 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  .details p {
+    margin: 5px 0;
+  }
+
+  .start a {
+    border-radius: 10px;
+    background: white;
+    color: blue;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .start a:hover {
+    background: #f0f0f0;
+    transform: scale(1.05);
+  }
+
+.start form button{
+  border-radius: 10px;
+  background: white;
+  color: blue;
+  padding: 10px 20px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.start form button:hover{
+  background: #f0f0f0;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+  /* Tabs Styling */
+  .tabs {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap;
+    scrollbar-width: thin;
+    scrollbar-color: #1e90ff transparent;
+    padding: 5px; /* Add padding to prevent content cutoff */
+  }
+
+  .tab-button {
+    padding: 8px 15px; /* Adjust padding for better visibility */
+    border: 1px solid #ccc;
+    color: white;
+    background-color: #1e90ff;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    white-space: nowrap; /* Prevent text wrapping */
+  }
+
+  .tab-button:hover {
+    background-color: #ddd;
+    transform: scale(1.05);
+  }
+
+
+
+  .tab-button.active {
+    background: #f0f0f0;
+    color: #1e90ff;
+    font-weight: bold;
+  }
+
+  /* Tab Content Styling */
+  .tab-content-container {
+    margin-top: 20px;
+  }
+
+  .tab-content {
+    display: none;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    width: 95%; /* Adjust width to fit inside the container */
+    height: auto;
+    overflow-y: auto; /* Enable vertical scrolling */
+    background: #1e90ff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 0 auto; /* Center the content */
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  #trip-content ul li, 
+  .hotels{
+    list-style-type: none;
+    background: #1e90ff; /* Light blue background */
+    color: white; /* White text for contrast */
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), /* Inset shadow for 3D effect */
+                0 4px 6px rgba(0, 0, 0, 0.1); /* Outer shadow for depth */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-left: 0; /* Remove extra left margin */
+    }
+
+#trip-content ul li:hover {
+transform: scale(1.02); /* Slight zoom effect on hover */
+box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.4), /* Enhanced inset shadow */
+          0 6px 8px rgba(0, 0, 0, 0.2); /* Enhanced outer shadow */
+}
+
+#trip-content ul li ul li {
+list-style-type: none;
+background: #1e90ff; /* Bright blue background for nested items */
+color: #fff; /* White text for contrast */
+padding: 8px;
+
+border-radius: 6px; /* Rounded corners */
+box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), /* Inset shadow for 3D effect */
+          0 3px 5px rgba(0, 0, 0, 0.1); /* Outer shadow for depth */
+margin-left: 0; /* Remove extra left margin */
+}
+
+#trip-content ul li ul li:hover {
+transform: scale(1.02); /* Slight zoom effect on hover */
+box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.4), /* Enhanced inset shadow */
+          0 5px 7px rgba(0, 0, 0, 0.2); /* Enhanced outer shadow */
+}
+  #trip-content .tourist-spot{
+    text-decoration: none;
+    color: blue;
+    font-style:bold;
+  }
+
+  /* Scrollbar Styling */
+  .tab-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .tab-content::-webkit-scrollbar-thumb {
+    background: #1e90ff;
+    border-radius: 4px;
+  }
+
+  .tab-content::-webkit-scrollbar-track {
+    background: #f0f0f0;
+  }
+
+
+
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 10000; /* Sit on top */
+    left: 0;
+    top: 0;
+    color: black;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    border-radius: 10px;
+}
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* carousal images */
+.carousel {
+position: relative;
+max-width: 700px;
+max-height: 400px;
+margin: auto;
+border-radius: 15px;
+}
+
+.carousel-images img {
+width: 100%;
+max-height: 400px;
+display: none;
+}
+
+.carousel-images img.active {
+display: block;
+}
+
+.carousel-button {
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
+background-color: rgba(0, 0, 0, 0.5);
+color: white;
+border: none;
+padding: 10px;
+cursor: pointer;
+z-index: 10;
+}
+
+.carousel-button.prev {
+left: 0;
+}
+
+.carousel-button.next {
+right: 0;
+}
+
+#place-details-modal {
+text-align: center
+}
+
+
+.btn-danger{
+  margin-top: 30px;
+  border-radius: 1px;
+  border-color: white;
+  background-color: rgba(255, 0, 0, 0.541);
+  border-radius: 10px;
+  color: white;
+  transition: all transform  0.3s ease-in-out;
+  padding: 10px;
+}
+.btn-danger:hover{
+  transform: scale(1.1);
+  transition: transform 0.3s ease-in-out;
+  background-color: red;
+  cursor: pointer;
+
+}
+
+@media (max-width: 700px) {
+  body {
+    font-size: 0.85rem !important; /* Reduce overall font size */
+    margin-top: 15vh !important;
+  }
+  .container{
+    background: transparent;
+  }
+  .container{
+    transform: none !important; 
+    transition: none !important; 
+    cursor: default !important; 
+  }
+
+  #container {
+  
+    width: 95% !important; /* Keep the same layout but reduce size */
+    max-width: 95% !important;
+    padding: 10px !important; /* Reduce padding */
+    margin: 20px auto !important;
+    box-sizing: border-box !important;
+    transform: none !important; /* Remove rotation */
+    transition: none !important; /* Disable smooth transitions */
+    cursor: default !important; /* Remove grab cursor */
+    user-select: none !important; /* Prevent text selection */
+  }
+
+  .top {
+    gap: 10px !important; /* Reduce spacing */
+  }
+
+  .details h3 {
+    font-size: 1.2rem !important; /* Reduce heading size */
+    margin-bottom: 10px !important;
+  }
+
+  .details p {
+    font-size: 0.9rem !important; /* Reduce paragraph size */
+    margin: 5px 0 !important;
+  }
+
+  .start form button {
+    font-size: 0.9rem !important; /* Reduce button size */
+    padding: 8px 12px !important;
+    width: 100% !important;
+    margin-top: 10px !important;
+  }
+
+  .tabs {
+    gap: 5px !important; /* Reduce spacing between tabs */
+    margin-top: 10px !important;
+    overflow-x: auto !important; /* Enable horizontal scrolling */
+    scrollbar-width: thin;
+    scrollbar-color: #1e90ff transparent;
+  }
+
+  .tab-button {
+    font-size: 0.8rem !important; /* Reduce tab button size */
+    padding: 6px 10px !important;
+    margin: 5px !important;
+  }
+
+  .tab-content {
+    font-size: 0.9rem !important; /* Reduce tab content font size */
+    padding: 10px !important;
+    width: 95% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .btn-danger {
+    font-size: 0.9rem !important; /* Reduce button size */
+    padding: 8px 12px !important;
+    width: fit-content !important;
+    margin-top: 10px !important;
+  }
+
+  .modal-content {
+    width: 90% !important; /* Reduce modal width */
+    padding: 10px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .carousel {
+    max-width: 100% !important; /* Adjust carousel width */
+    max-height: 250px !important; /* Reduce carousel height */
+  }
+
+  .carousel-images img {
+    max-height: 250px !important; /* Reduce image height */
+  }
+
+  #trip-content ul li {
+    font-size: 0.9rem !important; /* Reduce list item font size */
+    padding: 8px !important;
+    margin: 5px 0 !important;
+  }
+
+  #trip-content ul li ul li {
+    font-size: 0.85rem !important; /* Reduce nested list item font size */
+    padding: 6px !important;
+  }
+}

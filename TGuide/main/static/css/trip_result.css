@@ -1,0 +1,803 @@
+.navbar-links{
+ margin-right: 50px;
+}
+
+canvas {
+    top: 0;
+    left: 0;
+    position:fixed;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    z-index: -80;
+  }
+#chatbot {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+#chatbot-icon {
+
+
+
+        width: 100px;
+        border-radius: 40%;
+        height: 150px;
+        
+
+        cursor: pointer;
+        z-index:9999;
+       
+        
+       
+}
+
+#chatbot-model {
+    position: fixed;
+    bottom:0px;
+    right:0px;
+    width: 300px;
+    height: auto;
+    z-index: 9999;
+
+  }
+
+
+  #chatbot-model canvas {
+    display: block;
+    position: relative;
+    width: 300px !important;
+    height: auto !important;
+    pointer-events: none!important;
+  
+z-index: 0;
+
+}
+
+#chat-container {
+    position: fixed;
+    bottom: 150px;
+    right: 110px;
+    width: 350px;
+    height: 450px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+
+#chat-header {
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+
+#chat-messages {
+    height: 350px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f9f9f9;
+}
+
+
+.message {
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    max-width: 70%;
+}
+
+.user-message {
+    background: #dcf8c6;
+    align-self: flex-end;
+    text-align: right;
+}
+
+.bot-message {
+    background: #e8e8e8;
+    text-align: left;
+}
+
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    background: #fff;
+}
+
+.chat-input input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.chat-input button {
+    padding: 8px 15px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+
+.chat-popup {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    right: 110px;
+    bottom: 150px;
+    background: transparent;
+    padding: 10px;
+
+ 
+    text-align: center;
+    width: 250px;
+    z-index: 9999;
+    gap: 20px; /* Ensures space between the boxes */
+}
+
+#stay-question, #chat-question {
+    background: rgb(244, 243, 243, .7);
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%; /* Ensures full width within the popup */
+    margin-bottom: 10px; /* Adds space between the boxes */
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+    transform: perspective(1000px) rotateY(5deg); /* Initial 3D tilt */
+}
+
+#stay-question:hover, #chat-question:hover {
+    transform: perspective(1000px) rotateY(0deg) translateZ(10px); /* Enhanced 3D effect on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(0, 0, 0, 0.19); /* Deeper shadow on hover */
+}
+#chat-popup button,
+#selected-hotel-container .book-btn,
+.add-more-hotels button,
+#hotels-container button{
+    padding: 8px 15px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    margin-left: 5px;
+    cursor: pointer;
+    width:fit-content;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+
+}
+
+#chat-popup button:hover,
+.add-more-hotels button:hover,
+#selected-hotel-container .book-btn:hover,
+#hotels-container button:hover{
+    transform: perspective(1000px) translateZ(10px); /* Enhanced 3D effect on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(0, 0, 0, 0.19); /* Deeper shadow on hover */
+}
+
+
+body {         font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    background-image: url('/static/images/bg1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    }
+h1 { color: #2c3e50; }
+.trip-container { background: transparent; 
+    padding: 20px; 
+
+    display: flex;
+    height: auto;
+ }
+.left-panel { width: 50%; padding: 20px; }
+.right-panel { width: 50%; padding: 20px; }
+.trip-details { margin-bottom: 15px; color: white; 
+    padding: 10px;
+    width: fit-content;
+    height: auto;
+    border: 10px;
+    border-radius: 10px;
+    background: rgb(128, 128, 128, 0.4); }
+.trip-plan { white-space: pre-line; background: #ffffff; padding: 15px; border-radius: 5px; border: 1px solid #ddd; }
+
+
+
+.tabs {
+    display: flex;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #ddd;
+    overflow-x: auto;
+    padding-bottom: 5px;
+
+}
+
+.tab-button {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background-color: #f8f8f8;
+    margin-right: 5px;
+    border-radius: 5px 5px 0 0;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.tab-button.active {
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+    border-bottom: none;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    border: 1px solid #ddd;
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 15px 0 35px rgba(0,0,0,0.3);
+    border-radius: 5px;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease,box-shadow 0.3s;
+    transform: translateZ(30px);
+    max-height: 800px; /* Set the maximum height */
+    overflow-y: auto;
+    transform: perspective(1000px) rotateY(5deg);
+}
+
+.tab-content:hover{
+    transform: perspective(1000px) rotateY(0deg)
+    translateZ(10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 10px 10px rgba(0, 0, 0, 0.25);
+}
+
+.tab-content.active {
+    display: block;
+}
+.tab-content h1 {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.tab-content ul {
+    list-style-type: none;
+    padding: 0;
+    perspective: 1000px; 
+    /* Adds perspective to the 3D effect */
+}
+
+.tab-content li {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: rgb(241, 238, 238, 0.8);
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19); /* Enhanced shadow for depth */
+    transform: translateZ(10px); /* Adds depth to the element */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for hover effect */
+    width: 95%;
+}
+
+.tab-content li:hover {
+    transform: translateZ(20px); /* Lifts the element on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(0, 0, 0, 0.19); /* Deepens shadow on hover */
+}
+
+.tab-content li ul {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+
+.tab-content li ul li {
+    margin-bottom: 10px;
+    padding: 8px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.tourist-spot {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+
+
+.tab-content .emoji {
+    font-size: 1.2em;
+    margin-right: 5px;
+}
+
+#trip-tabs {
+    display: flex;
+    overflow-x: auto; /* Enables horizontal scrolling */
+    white-space: nowrap; /* Prevents wrapping */
+    max-width: 100%; /* Ensures it doesn't expand too much */
+    padding-bottom: 5px; /* Space for scrollbar */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    border-radius: 5px;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+    transform: perspective(1000px) rotateY(5deg);
+    margin-bottom: 30px;
+
+}
+#trip-tabs:hover {
+    transform: perspective(1000px) rotateY(0deg)
+    translateZ(10px);
+    
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 10px 10px rgba(0, 0, 0, 0.25); /* Deeper shadow on hover */
+}
+
+#trip-tabs::-webkit-scrollbar {
+    height: 6px;
+}
+
+#trip-tabs::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+#trip-tabs::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.tab-button {
+    flex: none; /* Ensures buttons stay in a single line */
+    padding: 10px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background-color: #f8f8f8;
+    margin-right: 5px;
+    white-space: nowrap;
+}
+
+.tab-button.active {
+    background-color: #ddd;
+    font-weight: bold;
+}
+
+
+
+
+
+
+.leaflet-routing-alt 
+{
+    display: none;
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#hotels-container {
+    color: white;
+    display: none;
+     /* Add space below trip-container */
+    clear: both; /* Ensures it moves below floated elements */
+    position: relative; /* Keeps it in flow of document */
+     /* Ensures it's above lower elements but below chatbot */
+    background: rgb(255, 255, 255,0.3); /* Optional: Adds contrast */
+    padding: 10px;
+    border-radius: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin: 0 auto;
+    width: 800px;
+    pointer-events: auto;
+    gap:10px;
+}
+
+.hotel-card {
+    color: black;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.8); /* Slightly more opaque for better visibility */
+ /* Increased margin for better spacing */
+    display: flex;
+    flex-direction: row;
+    margin: 0 auto;
+    width: 700px;
+    
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19); /* Enhanced shadow for depth */
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for hover effect */
+    transform: perspective(1000px) rotateX(5deg); /* Initial 3D tilt */
+    pointer-events: auto;
+    z-index: 10;
+    margin-top:10px;
+}
+
+.hotel-card:hover {
+    transform: perspective(1000px) rotateX(0deg);
+
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(0, 0, 0, 0.19); /* Deeper shadow on hover */
+}
+.hotel-card button{
+    pointer-events: auto;
+    z-index:12;
+}
+
+.hotel-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.hotel-details {
+margin-left: 10px;
+}
+
+
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 10000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    border-radius: 10px;
+}
+
+.close-hotel {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-hotel:hover,
+.close-hotel:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+#map {
+    margin-top: 100px;
+    height: 500px;
+    width: 100%;
+    z-index: 5;
+    border-radius: 15px; /* Rounded corners for a smoother look */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23); /* 3D shadow effect */
+    transform: perspective(1000px) rotateY(-5deg); /* Slight tilt for 3D effect */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-radius 0.3s ease; /* Smooth transition */
+}
+
+#map:hover {
+    transform: perspective(1000px) rotateY(0deg); /* Enhanced 3D effect on hover */
+    transform: translateZ(10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 10px 10px rgba(0, 0, 0, 0.25); /* Deeper shadow on hover */
+    border-radius: 15px;
+    background: none;
+}
+
+
+.save-btn button{
+    padding: 10px 20px;
+    background-color: #28a745; /* Green background */
+    color: white; /* White text */
+    border: none;
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+  
+    width: fit-content;
+
+}
+
+.save-btn:hover button {
+    background-color: #218838; /* Darker green on hover */
+}
+
+
+#selected-hotel-container {
+    display: none; /* Hidden by default */
+    margin-top: 10%;
+    background-color: #f9f9f9; /* Light background color */
+    padding: 20px; /* Padding for spacing */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+
+    max-width: 700px; /* Maximum width */
+    margin-left: auto; /* Center align */
+    margin-right: auto; /* Center align */
+
+}
+.hotel-entry{
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+#selected-hotel-container input {
+    width: 100%; /* Full width for better usability */
+    padding: 10px; /* Padding for spacing */
+    margin-bottom: 10px; /* Space between inputs */
+    border: 1px solid #ccc; /* Border for definition */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    font-size: 16px; /* Font size for readability */
+    transition: border-color 0.3s ease; /* Smooth transition for focus effect */
+}
+
+#selected-hotel-container input:focus {
+    border-color: #007bff; /* Change border color on focus */
+    outline: none; /* Remove default outline */
+}
+
+#selected-hotel-container .remove-btn:hover{
+    transform: scale(1.2);
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+#selected-hotel-container .book-btn{
+    width:50%;
+    height:40px;
+}
+
+form {
+    display: flex;
+    margin-top: 50px;
+    justify-content: center; /* Center align the form */
+    align-items: center; /* Center align vertically */
+    flex-direction: column; /* Stack elements vertically */
+    margin-bottom: 50px;
+}
+
+
+/* carousal images */
+.carousel {
+    position: relative;
+    max-width: 700px;
+    max-height: 400px;
+    margin: auto;
+    border-radius: 15px;
+}
+
+.carousel-images img {
+    width: 100%;
+    max-height: 400px;
+    display: none;
+}
+
+.carousel-images img.active {
+    display: block;
+}
+
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.carousel-button.prev {
+    left: 0;
+}
+
+.carousel-button.next {
+    right: 0;
+}
+
+#place-details-modal {
+    text-align: center
+}
+
+@media (max-width: 700px){
+    #chatbot-model {
+    position: fixed;
+      width: 200px !important;
+      height: auto !important;
+      right: 10px !important;
+      bottom: 20px !important;
+    }
+    #chatbot-model canvas {
+      width: 200px !important;
+      height: auto !important;
+    }
+    #chatbot-icon {
+      width: 50px !important;
+      height: 90px !important;
+      bottom: 0;
+      right: 0;
+  
+    }
+    #chatbot, #chatbot-container, #chat-window {
+      font-size: 0.85rem !important;
+      
+    }
+    #chatbot-container {
+      transform: scale(0.6);
+      transform-origin: bottom right;
+      right: 85px !important;
+      bottom: 75px !important;
+      transform: scale(0.6);
+    
+    }
+    #stay-question, #chat-question{
+        background-color: white;
+    }
+  }
+  @media (max-width: 700px) {
+
+  body {
+    font-size: 14px;
+  }
+
+  .trip-container {
+    flex-direction: column;
+    padding: 10px;
+    width: 90%;
+  }
+
+  .left-panel, .right-panel {
+    width: 90% !important;
+    padding: 10px;
+  }
+
+  .trip-details {
+    width: 90%;
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .tab-button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .tab-content {
+    padding: 10px;
+    font-size: 14px;
+    max-height: 500px;
+  }
+
+  .tab-content li {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .tab-content li ul li {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  .hotel-card {
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
+  }
+
+  .hotel-image {
+    width: 100%;
+    height: auto;
+    margin-bottom: 10px;
+  }
+
+  .hotel-details {
+    margin-left: 0;
+  }
+
+  #hotels-container {
+    width: 90%;
+    padding: 10px;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  .hotel-card{
+    width: 90% !important;
+  }
+
+  .save-btn button {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .modal-content {
+    width: 95%;
+  }
+
+  .carousel {
+    max-width: 100%;
+    max-height: 250px;
+  }
+
+  .carousel-images img {
+    max-height: 250px;
+  }
+
+  form {
+    padding: 0 10px;
+  }
+
+  .text-container {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  #chat-container {
+    width: 90%;
+    right: 5%;
+    height: 400px;
+  }
+
+  #stay-question, #chat-question {
+    font-size: 14px;
+  }
+
+  #selected-hotel-container {
+    width: 80%;
+    padding: 10px;
+  }
+  #selected-hotel-container input{
+    width: 93%;
+  }
+
+  .hotel-entry {
+    flex-direction: column;
+  }
+  .place-details-modal,
+  .modal-content{
+    width: 90% !important;
+  }
+
+}

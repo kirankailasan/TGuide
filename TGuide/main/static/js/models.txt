@@ -1,0 +1,885 @@
+<script>
+    let scene, camera, renderer, mixer, model, clock;
+    let currentAction;
+    const actions = {};
+    let idleTimeout;
+    let userInteracted = false;
+  
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    camera.position.z = 5;
+  
+    clock = new THREE.Clock();
+  
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(300, 300);
+    document.getElementById('chatbot-icon').appendChild(renderer.domElement);
+  
+    const light = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(light);
+  
+    const loader = new THREE.GLTFLoader();
+    loader.load('/static/hdri/untitled.glb', function (gltf) {
+      model = gltf.scene;
+      model.scale.set(1.5, 1.5, 1.5);
+      model.position.set(2, -1, 0);
+      model.rotation.y = -0.4;
+      scene.add(model);
+  
+      mixer = new THREE.AnimationMixer(model);
+      gltf.animations.forEach((clip) => {
+        const action = mixer.clipAction(clip);
+        actions[clip.name.toLowerCase()] = action;  // make names lowercase for easier use
+      });
+  
+      // Start waving twice, then pose
+      waveTwiceThenPose();
+  
+      // Detect click on chatbot
+      document.getElementById('chatbot-icon').addEventListener('click', () => {
+        userInteracted = true;
+        resetIdleTimer();
+      });
+  
+      resetIdleTimer();
+    });
+  
+    function playAnimation(name, loop = true) {
+      if (!actions[name]) {
+        console.warn(`Animation "${name}" not found`);
+        return;
+      }
+  
+      if (currentAction) {
+        currentAction.fadeOut(0.5);
+      }
+  
+      currentAction = actions[name];
+      currentAction.reset();
+      currentAction.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce);
+      currentAction.clampWhenFinished = !loop;
+      currentAction.fadeIn(0.5).play();
+    }
+  
+    function waveTwiceThenPose() {
+  // Play "hi" animation once
+  playAnimation("hi", false);
+
+  // Use setTimeout to delay the start of the "pose" animation after "hi" ends
+  setTimeout(() => {
+    playAnimation("pose", true);  // After a small delay, play the "pose" animation in loop
+  }, currentAction.getClip().duration * 1000); // Delay based on the duration of "hi" animation
+}
+  
+    function resetIdleTimer() {
+      clearTimeout(idleTimeout);
+      idleTimeout = setTimeout(() => {
+        if (!userInteracted) {
+          waveTwiceThenPose();
+          resetIdleTimer();
+        }
+      }, 5 * 60 * 1000); // 5 minutes
+    }
+  
+    function animate() {
+      requestAnimationFrame(animate);
+      if (mixer) mixer.update(clock.getDelta());
+      renderer.render(scene, camera);
+    }
+  
+    animate();
+  </script>
+
+
+2
+
+<script>
+    let scene, camera, renderer, mixer, model, clock;
+    let currentAction;
+    const actions = {};
+    let idleTimeout;
+    let userInteracted = false;
+  
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    camera.position.z = 5;
+  
+    clock = new THREE.Clock();
+  
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(300, 300);
+    document.getElementById('chatbot-icon').appendChild(renderer.domElement);
+  
+    const light = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(light);
+  
+    const loader = new THREE.GLTFLoader();
+    loader.load('/static/hdri/fut.glb', function (gltf) {
+      model = gltf.scene;
+      model.scale.set(1.5, 1.5, 1.5);
+      model.position.set(2, -1, 0);
+      model.rotation.y = -0.4;
+      scene.add(model);
+  
+      mixer = new THREE.AnimationMixer(model);
+      gltf.animations.forEach((clip) => {
+        const action = mixer.clipAction(clip);
+        actions[clip.name.toLowerCase()] = action;  // make names lowercase for easier use
+      });
+  
+      // Start waving twice, then pose
+      waveTwiceThenPose();
+  
+      // Detect click on chatbot
+      document.getElementById('chatbot-icon').addEventListener('click', () => {
+        userInteracted = true;
+        resetIdleTimer();
+      });
+  
+      resetIdleTimer();
+    });
+  
+    function playAnimation(name, loop = true) {
+      if (!actions[name]) {
+        console.warn(`Animation "${name}" not found`);
+        return;
+      }
+  
+      if (currentAction) {
+        currentAction.fadeOut(0.5);
+      }
+  
+      currentAction = actions[name];
+      currentAction.reset();
+      currentAction.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce);
+      currentAction.clampWhenFinished = !loop;
+      currentAction.fadeIn(0.5).play();
+    }
+  
+    function waveTwiceThenPose() {
+        // Wait for 3 seconds before starting the animation
+            playAnimation("pose", true);
+        setTimeout(() => {
+            // Play "hi" animation once
+            playAnimation("hi", false);
+            playAnimation("pose", true);
+
+            // After the "hi" animation finishes, start it again
+            setTimeout(() => {
+            playAnimation("hi", false);
+
+            // After the second "hi" animation finishes, start "pose"
+            setTimeout(() => {
+                playAnimation("pose", true); // Loop "pose" animation
+            }, actions["hi"].getClip().duration * 1000); // Delay based on "hi" animation duration
+            }, actions["hi"].getClip().duration * 1000); // Wait for the first "hi" to finish
+        }, 3000); // Wait for 3 seconds before starting the wave
+        }
+
+  
+    function resetIdleTimer() {
+      clearTimeout(idleTimeout);
+      idleTimeout = setTimeout(() => {
+        if (!userInteracted) {
+          waveTwiceThenPose();
+          resetIdleTimer();
+        }
+      }, 5 * 60 * 1000); // 5 minutes
+    }
+  
+    function animate() {
+      requestAnimationFrame(animate);
+      if (mixer) mixer.update(clock.getDelta());
+      renderer.render(scene, camera);
+    }
+  
+    animate();
+  </script>
+
+working white bot 
+
+<script>
+    let scene, camera, renderer, mixer, model, clock;
+    let currentAction;
+    const actions = {};
+    let idleTimeout;
+    let userInteracted = false;
+    let speakToggle = true;
+    
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    camera.position.z = 5;
+    
+    clock = new THREE.Clock();
+    
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(300, 300);
+    document.getElementById('chatbot-icon').appendChild(renderer.domElement);
+    
+    const light = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(light);
+    
+    const loader = new THREE.GLTFLoader();
+    loader.load('/static/hdri/untitled.glb', function (gltf) {
+        model = gltf.scene;
+        model.scale.set(1.5, 1.5, 1.5);
+        model.position.set(2, -1, 0);
+        model.rotation.y = -0.4;
+        scene.add(model);
+    
+        mixer = new THREE.AnimationMixer(model);
+        gltf.animations.forEach((clip) => {
+            const action = mixer.clipAction(clip);
+            actions[clip.name.toLowerCase()] = action;
+        });
+    
+        playAnimation("pose", true);
+        waveTwiceThenPose();
+    
+        document.getElementById('chatbot-icon').addEventListener('click', () => {
+            userInteracted = true;
+            resetIdleTimer();
+        });
+    
+        resetIdleTimer();
+    });
+    
+    function playAnimation(name, loop = true) {
+        if (!actions[name]) return;
+        if (currentAction) currentAction.fadeOut(0.3);
+    
+        currentAction = actions[name];
+        currentAction.reset();
+        currentAction.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce);
+        currentAction.clampWhenFinished = !loop;
+        currentAction.fadeIn(0.3).play();
+    }
+    
+    function waveTwiceThenPose() {
+        playAnimation("pose", true);
+        setTimeout(() => {
+            playAnimation("hi", false);
+            setTimeout(() => {
+                playAnimation("hi", false);
+                setTimeout(() => {
+                    playAnimation("pose", true);
+                }, actions["hi"].getClip().duration * 1000);
+            }, actions["hi"].getClip().duration * 1000);
+        }, 3000);
+    }
+    
+    function resetIdleTimer() {
+        clearTimeout(idleTimeout);
+        idleTimeout = setTimeout(() => {
+            if (!userInteracted) {
+                waveTwiceThenPose();
+                resetIdleTimer();
+            }
+        }, 5 * 60 * 1000);
+    }
+    
+    function animate() {
+        requestAnimationFrame(animate);
+        if (mixer) mixer.update(clock.getDelta());
+        renderer.render(scene, camera);
+    }
+    animate();
+    
+    // Intercept response from chatbot and trigger speak animation
+    const originalAppendMessage = appendMessage;
+    window.appendMessage = function (sender, message) {
+        originalAppendMessage(sender, message);
+        if (sender === "Bot") {
+            const speakAnim = speakToggle ? "speak1" : "speak2";
+            speakToggle = !speakToggle;
+    
+            playAnimation(speakAnim, true);
+    
+            // Estimate how long to speak based on message length (or just use 2s fallback)
+            const estimatedDuration = Math.max(2000, message.length * 30);
+            setTimeout(() => {
+                playAnimation("pose", true);
+            }, estimatedDuration);
+        }
+    };
+    </script>
+    
+
+
+  //final working 
+
+  <script>
+    let scene, camera, renderer, mixer, model, clock;
+    let currentAction;
+    const actions = {};
+    let idleTimeout;
+    let userInteracted = false;
+    let speakToggle = true;
+
+    // Variables for mouse drag rotation
+    let isMouseDown = false;
+    let previousMouseX = 0;
+    let previousMouseY = 0;
+    let rotationSpeed = 0.005; // Rotation speed for mouse movement
+    let rotationY = -0.2; // Initial rotation value on Y-axis
+    let rotationX = 0.2; // Initial rotation value on X-axis
+    let rotationTargetY = rotationY; // Target for smooth return
+    let rotationTargetX = rotationX; // Target for smooth return
+    let returnTimeout; // Timer to trigger the model returning to normal
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    camera.position.z = 5;
+
+    clock = new THREE.Clock();
+
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(300, 300);
+    document.getElementById('chatbot-model').appendChild(renderer.domElement);
+
+    const light = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(light);
+
+    const loader = new THREE.GLTFLoader();
+    loader.load('/static/hdri/final.glb', function (gltf) {
+        model = gltf.scene;
+        model.scale.set(1.8, 1.8, 1.8);
+        model.position.set(2, -3, 0);
+        model.rotation.y = rotationY; // Initial model rotation
+        scene.add(model);
+
+        mixer = new THREE.AnimationMixer(model);
+        gltf.animations.forEach((clip) => {
+            const action = mixer.clipAction(clip);
+            actions[clip.name.toLowerCase()] = action;
+        });
+
+        playAnimation("pose", true);
+        waveTwiceThenPose();
+
+        document.getElementById('chatbot-model').addEventListener('click', () => {
+            userInteracted = true;
+            resetIdleTimer();
+        });
+
+        resetIdleTimer();
+    });
+
+    function playAnimation(name, loop = true) {
+        if (!actions[name]) return;
+        if (currentAction) currentAction.fadeOut(0.3);
+
+        currentAction = actions[name];
+        currentAction.reset();
+        currentAction.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce);
+        currentAction.clampWhenFinished = !loop;
+        currentAction.fadeIn(0.3).play();
+    }
+
+    function waveTwiceThenPose() {
+        playAnimation("pose", true);
+        setTimeout(() => {
+            playAnimation("hi", false);
+            setTimeout(() => {
+                playAnimation("pose", true);
+            }, actions["hi"].getClip().duration * 1000);
+        }, actions["hi"].getClip().duration * 1000);
+    };
+
+    function resetIdleTimer() {
+        clearTimeout(idleTimeout);
+        idleTimeout = setTimeout(() => {
+            if (!userInteracted) {
+                waveTwiceThenPose();
+                resetIdleTimer();
+            }
+        }, 5 * 60 * 1000); // 5 minutes of inactivity
+    }
+
+    // Mouse drag handling for rotation
+    document.getElementById('chatbot-model').addEventListener('mousedown', (event) => {
+        isMouseDown = true;
+        previousMouseX = event.clientX;
+        previousMouseY = event.clientY;
+
+        // Clear the return timer when mouse is down to prevent auto-return
+        clearTimeout(returnTimeout);
+    });
+
+    document.addEventListener('mousemove', (event) => {
+        if (!isMouseDown) return;
+
+        // Calculate the difference in mouse movement
+        const deltaX = event.clientX - previousMouseX;
+        const deltaY = event.clientY - previousMouseY;
+
+        // Update model rotation based on mouse movement
+        rotationY += deltaX * rotationSpeed;// Only track vertical mouse movement
+        model.rotation.y = rotationY;// Prevent excessive vertical rotation
+
+        // Update previous mouse position for next movement
+        previousMouseX = event.clientX;
+        previousMouseY = event.clientY;
+
+        // Reset the return timer as mouse is moving
+        clearTimeout(returnTimeout);
+        returnTimeout = setTimeout(() => {
+            // Smoothly return to the original rotation over 3 seconds
+            returnToNormalRotation();
+        }, 3000); // 3 seconds of inactivity before auto-return
+    });
+
+    document.addEventListener('mouseup', () => {
+        isMouseDown = false;
+    });
+
+    // Function to smoothly return the model to its initial rotation
+    function returnToNormalRotation() {
+        const duration = 3; // Seconds to return to normal
+        const startY = model.rotation.y;
+        const startX = model.rotation.x;
+
+        const endY = rotationTargetY;
+        const endX = rotationTargetX;
+
+        let startTime = Date.now();
+
+        function smoothReturn() {
+            const elapsedTime = (Date.now() - startTime) / 1000;
+            const progress = Math.min(elapsedTime / duration, 1);
+
+            // Calculate smooth transition between start and end
+            model.rotation.y = startY + (endY - startY) * progress;
+            model.rotation.x = startX + (endX - startX) * progress;
+
+            if (progress < 1) {
+                requestAnimationFrame(smoothReturn);
+            }
+        }
+
+        smoothReturn();
+    }
+
+    // Animate the scene
+    function animate() {
+        requestAnimationFrame(animate);
+
+        if (mixer) mixer.update(clock.getDelta());
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Intercept response from chatbot and trigger speak animation
+    const originalAppendMessage = appendMessage;
+    window.appendMessage = function (sender, message) {
+        originalAppendMessage(sender, message);
+        if (sender === "Bot") {
+            const speakAnim = speakToggle ? "speak1" : "speak2";
+            speakToggle = !speakToggle;
+
+            playAnimation(speakAnim, true);
+
+            const estimatedDuration = Math.max(2000, message.length * 30);
+            setTimeout(() => {
+                playAnimation("pose", true);
+            }, estimatedDuration);
+        }
+    };
+</script>
+  
+
+
+  //working for car 
+  <script type="module">
+    import * as THREE from 'https://cdn.skypack.dev/three@0.134.0';
+    import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.134.0/examples/jsm/loaders/GLTFLoader.js';
+  
+    let scene, camera, renderer, car, wheels = [];
+  
+    init();
+    animate();
+  
+    function init() {
+      scene = new THREE.Scene();
+  
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(0, 2, 5);
+  
+      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+  
+
+      
+      //lights
+      // Ambient light (soft overall lighting)
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.2); // increased intensity
+      scene.add(ambientLight);
+
+      // Directional light (like sunlight)
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+      directionalLight.position.set(10, 20, 10);
+      directionalLight.castShadow = true;
+      scene.add(directionalLight);
+
+
+
+  
+      const loader = new GLTFLoader();
+      loader.load('/static/hdri/m3.glb', (gltf) => {
+        const model = gltf.scene;
+        scene.add(model);
+  
+        car = model.getObjectByName('car');
+        const road = model.getObjectByName('road');
+  
+        wheels.push(
+          model.getObjectByName('FL_Wheel'),
+          model.getObjectByName('FR_Wheel'),
+          model.getObjectByName('BL_Wheel'),
+          model.getObjectByName('BR_Wheel')
+        );
+        
+  
+        model.scale.set(1, 1, 1);
+        model.position.set(0, 0, 0);
+      });
+  
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+  
+    function animate() {
+      requestAnimationFrame(animate);
+  
+      const scrollY = window.scrollY;
+      const maxScroll = document.body.scrollHeight - window.innerHeight;
+      const scrollPercent = scrollY / maxScroll;
+  
+      if (car) {
+        const carZ = -scrollPercent * 10; // slower car movement
+        car.position.z = carZ;
+  
+        // Move camera to follow the car, staying slightly behind
+        camera.position.z = carZ + 5;
+        
+  
+        wheels.forEach(wheel => {
+          // Rotate wheels slower
+          wheel.rotation.x = -scrollPercent * Math.PI * 10;
+        });
+      }
+  
+      renderer.render(scene, camera);
+    }
+  </script>
+
+
+
+
+
+
+
+
+
+
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scroll-Based Car Movement</title>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      overflow-x: hidden;
+    }
+    #three-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+    .panel {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      z-index: 1;
+      position: relative;
+      background: rgba(255, 255, 255, 0.9);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="three-canvas"></canvas>
+  <div style="height: 4000px;"></div>
+
+  <script type="module">
+    import * as THREE from 'https://cdn.skypack.dev/three@0.134.0';
+    import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.134.0/examples/jsm/loaders/GLTFLoader.js';
+  
+    let scene, camera, renderer, car, wheels = [];
+    let carParts = [];
+    let mixer, clock;
+  
+    init();
+    animate();
+  
+    function init() {
+      scene = new THREE.Scene();
+  
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(0, 2, 3);
+  
+      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+  
+      // Lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.2); // increased intensity
+      scene.add(ambientLight);
+  
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+      directionalLight.position.set(10, 20, 10);
+      directionalLight.castShadow = true;
+      scene.add(directionalLight);
+  
+      clock = new THREE.Clock(); // For delta time calculation
+  
+      const loader = new GLTFLoader();
+      loader.load('/static/hdri/m3.glb', (gltf) => {
+        const model = gltf.scene;
+        scene.add(model);
+  
+        car = model.getObjectByName('car');
+        const road = model.getObjectByName('road');
+  
+        wheels.push(
+          model.getObjectByName('FL_Wheel'),
+          model.getObjectByName('FR_Wheel'),
+          model.getObjectByName('BL_Wheel'),
+          model.getObjectByName('BR_Wheel')
+        );
+  
+   
+  
+        model.scale.set(1, 1, 1);
+        model.position.set(0, 0, 0);
+
+
+  
+        // Animation mixer for handling animations
+        mixer = new THREE.AnimationMixer(model);
+        gltf.animations.forEach((clip) => {
+          const action = mixer.clipAction(clip);
+          action.play();
+        });
+  
+        // Find and store car parts for later animations
+        car.traverse((child) => {
+          if (child.isMesh) {
+            if (["BL_Wheel", "BR_Wheel", "FL_Wheel", "FR_Wheel"].includes(child.name)) {
+              wheels.push(child);
+            }
+            if ([
+              "BR20_CarPaint_0",
+              "BR20_FrontLights_0",
+              "BR20_Plastic_0",
+              "BR20_RearLights_0",
+              "BR20_Rims_0",
+              "BR20_Window_0"
+            ].includes(child.name)) {
+              carParts.push(child);
+            }
+          }
+        });
+      });
+  
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+  
+    function animate() {
+      requestAnimationFrame(animate);
+  
+      const delta = clock.getDelta();
+      if (mixer) mixer.update(delta); // Update animations
+  
+      const scrollY = window.scrollY;
+      const maxScroll = document.body.scrollHeight - window.innerHeight;
+      const scrollPercent = scrollY / maxScroll;
+  
+      if (car) {
+        const carZ = -scrollPercent * 10-2; // slower car movement
+        car.position.z = carZ;
+  
+        // Move camera to follow the car, staying slightly behind
+        camera.position.z = carZ + 3;
+  
+
+  
+        // Animate car parts (e.g., slight vibration)
+        carParts.forEach(part => {
+          part.rotation.y = Math.sin(scrollPercent * Math.PI * 10) * 0.01;
+          part.position.x = Math.sin(scrollPercent * 4) * 0.01;
+        });
+  
+        // Rotate wheels
+        wheels.forEach(wheel => {
+          wheel.rotation.x -= delta * 5; // Wheel rotation
+        });
+      }
+  
+      // Additional Animations for car parts
+      // Animate car paint for subtle changes in material (can simulate reflections)
+      const carPaint = car.getObjectByName("BR20_CarPaint_0");
+      if (carPaint) {
+        carPaint.material.emissiveIntensity = Math.sin(scrollPercent * Math.PI * 2) * 0.1;
+      }
+  
+      // Animate front lights for a flickering effect
+      const frontLights = car.getObjectByName("BR20_FrontLights_0");
+      if (frontLights) {
+        frontLights.material.emissiveIntensity = Math.sin(scrollPercent * Math.PI * 4) * 0.05 + 0.5;
+      }
+  
+      // Animate rear lights for a flickering effect
+      const rearLights = car.getObjectByName("BR20_RearLights_0");
+      if (rearLights) {
+        rearLights.material.emissiveIntensity = Math.sin(scrollPercent * Math.PI * 3) * 0.05 + 0.5;
+      }
+  
+      // Slight rotation for plastic parts to give the appearance of flexing
+      const plasticParts = car.getObjectByName("BR20_Plastic_0");
+      if (plasticParts) {
+        plasticParts.rotation.y = Math.sin(scrollPercent * Math.PI * 8) * 0.01;
+      }
+  
+      // Windows subtle movements to simulate car body flexing
+      const windows = car.getObjectByName("BR20_Window_0");
+      if (windows) {
+        windows.position.x = Math.sin(scrollPercent * Math.PI * 6) * 0.005;
+      }
+  
+      // Animate rims for slight rotation effect
+      const rims = car.getObjectByName("BR20_Rims_0");
+      if (rims) {
+        rims.rotation.x = Math.sin(scrollPercent * Math.PI * 4) * 0.005;
+      }
+  
+      renderer.render(scene, camera);
+    }
+  </script>
+  
+  
+  
+</body>
+</html>
+
+
+new animation 
+
+        <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const items = document.querySelectorAll('.banner .slider .item');
+    const slider = document.querySelector('.banner .slider');
+    const quantity = parseInt(getComputedStyle(slider).getPropertyValue('--quantity'));
+
+    // Assign random rotation speeds and initial positions
+    items.forEach(item => {
+        item.dataset.rotateX = Math.random() * 0.2 - 0.1;  // small drift speed -0.1 to 0.1 deg/frame
+        item.dataset.rotateY = Math.random() * 0.2 - 0.1;
+        item.dataset.rotateZ = Math.random() * 0.2 - 0.1;
+
+        // Random starting positions (0–360 deg)
+        item.dataset.rotX = Math.random() * 360;
+        item.dataset.rotY = Math.random() * 360;
+        item.dataset.rotZ = Math.random() * 360;
+
+        // Set initial random rotation via CSS variables
+        item.style.setProperty('--random-rotate-x', `${item.dataset.rotX}deg`);
+        item.style.setProperty('--random-rotate-y', `${item.dataset.rotY}deg`);
+        item.style.setProperty('--random-rotate-z', `${item.dataset.rotZ}deg`);
+
+        item.dataset.paused = "false";
+
+        // Hover effect: smoothly reset image to neutral position
+        item.addEventListener('mouseenter', () => {
+            item.dataset.paused = "true";
+            item.style.transition = 'transform 1.5s ease';  // Add smooth transition
+            item.style.setProperty('--random-rotate-x', `0deg`);
+            item.style.setProperty('--random-rotate-y', `0deg`);
+            item.style.setProperty('--random-rotate-z', `0deg`);
+        });
+
+        item.addEventListener('mouseleave', () => {
+            item.dataset.paused = "false";
+            item.style.transition = '';  // Reset transition after hover ends
+        });
+    });
+
+    function updateRotation() {
+        const currentRotation = getSliderRotationY();
+        const anglePerItem = 360 / quantity;
+        const frontIndex = Math.round(currentRotation / anglePerItem) % quantity || quantity;
+
+        items.forEach(item => {
+            const position = parseInt(item.style.getPropertyValue('--position'));
+
+            // If the item is at the front, reset to neutral position
+            if (position === frontIndex) {
+                // Reset front item to its default (neutral) position
+                item.style.transition = 'transform 1.5s ease';  // Smooth transition for the front image
+                item.style.setProperty('--random-rotate-x', `0deg`);
+                item.style.setProperty('--random-rotate-y', `0deg`);
+                item.style.setProperty('--random-rotate-z', `0deg`);
+                item.dataset.paused = "true";  // Stop random rotation while at the front
+                // Recalculate the position to ensure it's front-facing (0deg)
+                item.style.setProperty('transform', 'rotateY(0deg)');
+            } else {
+                // Apply slow random drift for non-front items
+                item.dataset.paused = "false";
+                item.dataset.rotX = (+item.dataset.rotX + +item.dataset.rotateX) % 360;
+                item.dataset.rotY = (+item.dataset.rotY + +item.dataset.rotateY) % 360;
+                item.dataset.rotZ = (+item.dataset.rotZ + +item.dataset.rotateZ) % 360;
+
+                item.style.setProperty('--random-rotate-x', `${item.dataset.rotX}deg`);
+                item.style.setProperty('--random-rotate-y', `${item.dataset.rotY}deg`);
+                item.style.setProperty('--random-rotate-z', `${item.dataset.rotZ}deg`);
+            }
+        });
+    }
+
+    // Helper to get the slider's rotation angle
+    function getSliderRotationY() {
+        const computedStyle = getComputedStyle(slider);
+        const transform = computedStyle.transform;
+        if (transform === 'none') return 0;
+
+        const values = transform.match(/matrix3d\((.+)\)/);
+        if (values) {
+            const matrix = values[1].split(', ').map(parseFloat);
+            const angle = Math.atan2(matrix[8], matrix[0]) * (180 / Math.PI);
+            return (angle + 360) % 360;
+        }
+        return 0;
+    }
+
+    setInterval(updateRotation, 33);  // ~30fps
+});
+
+        </script>

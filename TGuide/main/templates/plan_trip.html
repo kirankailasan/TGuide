@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+{% extends 'navbar.html' %}
+{% load static %}
+
+{% block content %}
+
+<html lang="en">
+    <head>
+                <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Plan trip</title>
+        <link rel="stylesheet" href="{% static 'css/plan_trip.css'%}">
+        <link rel="stylesheet" href="{% static 'css/loader.css' %}">
+
+    </head>
+
+<body style="margin-top: 5%">
+
+    <!-- First Loading Screen -->
+    <div id="loading">
+        <div class="loader"></div>
+        <p>Loading... Please wait.</p>
+    </div>
+
+    <h1>Plan Your Trip Using AI</h1>
+    <div class="trip-form-container" >
+        <form id="trip-form" method="post">
+            {% csrf_token %}
+            <div class="form-group" id="step-1">
+                <div class="total-form">
+                    <div>
+                        <label for="location">Where are you planning to visit?</label>
+                        <input type="text" id="location" name="location" autocomplete="off">
+                        <div id="suggestions-container">
+                            <ul id="suggestions" class="suggestion-list"></ul>
+                        </div>
+                    </div>
+                    <hr style="margin: 24px 0;">
+                    <div>
+                        <div>
+                            <label for="multi-location-input">Or add multiple locations</label>
+                            <p style="font-size: 0.75em;">(Create separate plans for different districts)</p>
+                            <div style="display: flex">
+                                <input type="text" id="multi-location-input" autocomplete="off" placeholder="Search and add locations">
+                                <button style="margin-top: 0; height: fit-content;" type="button" id="add-multi-location-btn">Add</button>
+                            </div>
+                        </div>
+                        <div id="multi-suggestions-container">
+                            <ul id="multi-suggestions" class="suggestion-list"></ul>
+                        </div>
+                        <div id="selected-multi-locations" style="margin-top:10px; display:none;"></div>
+                    </div>
+                </div>
+                <div style="justify-content: center; display: flex">
+                    <button type="button" onclick="nextStep(2)">Next</button>
+                </div>
+            </div>
+            
+
+            <div class="form-group" id="step-2" style="display: none;">
+                <div class="dt">
+                    <div class="start">
+                        <label for="start_date">Start Date:</label>
+                        <input type="date" id="start_date" name="start_date" required><br>
+                        <label for="start_time"> At what time will you reach <span id="display_location"></span>?</label>
+                        <input type="time" id="start_time" name="start_time">
+                    </div>
+                    <div class="end">
+                        <label for="end_date">End Date:</label>
+                        <input type="date" id="end_date" name="end_date" required><br>
+                        <label for="end_time">At what time are you planning to leave?</label>
+                        <input type="time" id="end_time" name="end_time">
+                    </div>
+                </div>
+                <div class="pn">
+                    <button type="button" onclick="prevStep(1)">Previous</button>
+                    <button type="button" onclick="nextStep(3)">Next</button>
+                </div>
+            </div>
+
+            <div class="form-group" id="step-3" style="display: none;">
+                <label for="budget">Budget (in INR):</label>
+                <input type="number" id="budget" name="budget" required>
+                <div class="pn">
+                    <button type="button" onclick="prevStep(2)">Previous</button>
+                    <button type="button" onclick="nextStep(4)">Next</button>
+                </div>
+            </div>
+
+            <div class="form-group" id="step-4" style="display: none;">
+                <label for="people">Number of People:</label>
+                <input type="number" id="people" name="people" required>
+                <div class="pn">
+                    <button type="button" onclick="prevStep(3)">Previous</button>
+                    <button type="button" onclick="nextStep(5)">Next</button>
+                </div>
+            </div>
+
+            <div class="form-group" id="step-5" style="display: none;">
+                <label for="preferences">Preferences (e.g., adventure, relaxation, culture):</label>
+                <input type="text" id="preferences" name="preferences">
+                <button type="button" onclick="prevStep(4)">Previous</button>
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <div style="margin-top: 100px; margin-bottom: 100px;">
+            <div class="district-spots">
+        <h2 style="color: white; margin-top: 50px">Checkout all Tourist spots in each District</h2> <br>
+        <select id="district-select">
+            <option value="">Select..</option>
+            <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+            <option value="Kollam">Kollam</option>
+            <option value="Pathanamthitta">Pathanamthitta</option>
+            <option value="Alappuzha">Alappuzha</option>
+            <option value="Kottayam">Kottayam</option>
+            <option value="Idukki">Idukki</option>
+            <option value="Ernakulam">Ernakulam</option>
+            <option value="Thrissur">Thrissur</option>
+            <option value="Palakkad">Palakkad</option>
+            <option value="Malappuram">Malappuram</option>
+            <option value="Kozhikode">Kozhikode</option>
+            <option value="Wayanad">Wayanad</option>
+            <option value="Kannur">Kannur</option>
+            <option value="Kasaragod">Kasaragod</option>
+        </select>
+    </div>
+    </div>
+    <div style="margin-bottom: 200px;">
+        
+        <div class="ri-container"><div class="district-imgs" id="district-imgs"></div></div>
+    </div>
+    <div  class="tourist-spots-container" id="tourist-spots-container"></div>
+
+    <div id="loadingScreen" style="display: none;">
+        <div class="spinner"></div>
+        <p>Planning your trip... Please wait.</p>
+    </div>
+
+    <div id="ai-suggestion-modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:32px; border-radius:12px; max-width:90vw; text-align:center;">
+            <p style="font-size:1.1em; margin-bottom:24px;">
+                Do you want AI to add more tourist spots?<br>
+                <span style="font-size:0.95em; color:#666;">(Else, plan will be created only using selected spots)</span>
+            </p>
+            <button class="ynbutton" id="ai-yes-btn" style="margin-right:16px;">Yes</button>
+            <button class="ynbutton" id="ai-no-btn">No</button>
+        </div>
+    </div>
+
+
+
+
+
+<script type="module" src="{% static 'js/background.js' %}"></script>
+<script  src="{% static 'js/plan_trip.js' %}"></script>
+<script>
+let selectedMultiLocations = [];
+document.addEventListener("DOMContentLoaded", function () {
+    // --- Single location logic ---
+    let locationInput = document.getElementById("location");
+    let suggestionsList = document.getElementById("suggestions");
+    let selectedLocation = false;
+
+    locationInput.addEventListener("input", function () {
+        selectedLocation = false;
+        let query = locationInput.value.trim();
+        if (query.length < 2) {
+            suggestionsList.innerHTML = "";
+            suggestionsList.style.display = "none";
+            return;
+        }
+        fetch(`/search/?query=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                suggestionsList.innerHTML = "";
+                suggestionsList.style.display = "block";
+                let allSuggestions = new Set([
+                    ...(data.suggestions || []).map(s => s.name),
+                    ...(data.related_places || []).map(r => r.name),
+                ]);
+                allSuggestions.forEach(location => {
+                    let item = document.createElement("li");
+                    item.textContent = location;
+                    item.classList.add("suggestion-item");
+                    item.addEventListener("click", function () {
+                        locationInput.value = location;
+                        selectedLocation = true;
+                        suggestionsList.innerHTML = "";
+                        suggestionsList.style.display = "none";
+                    });
+                    suggestionsList.appendChild(item);
+                });
+                if (allSuggestions.size === 0) {
+                    suggestionsList.style.display = "none";
+                }
+            })
+            .catch(error => console.error("Error fetching suggestions:", error));
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!locationInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+            suggestionsList.innerHTML = "";
+            suggestionsList.style.display = "none";
+        }
+    });
+
+    // --- Multi-location logic ---
+    const multiInput = document.getElementById("multi-location-input");
+    const multiSuggestionsList = document.getElementById("multi-suggestions");
+    const addMultiBtn = document.getElementById("add-multi-location-btn");
+    const selectedMultiDiv = document.getElementById("selected-multi-locations");
+    
+    let validMultiLocation = false;
+
+    multiInput.addEventListener("input", function () {
+        validMultiLocation = false;
+        let query = multiInput.value.trim();
+        if (query.length < 2) {
+            multiSuggestionsList.innerHTML = "";
+            multiSuggestionsList.style.display = "none";
+            return;
+        }
+        fetch(`/search/?query=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                multiSuggestionsList.innerHTML = "";
+                multiSuggestionsList.style.display = "block";
+                let allSuggestions = new Set([
+                    ...(data.suggestions || []).map(s => s.name),
+                    ...(data.related_places || []).map(r => r.name),
+                ]);
+                allSuggestions.forEach(location => {
+                    let item = document.createElement("li");
+                    item.textContent = location;
+                    item.classList.add("suggestion-item");
+                    item.addEventListener("click", function () {
+                        multiInput.value = location;
+                        validMultiLocation = true;
+                        multiSuggestionsList.innerHTML = "";
+                        multiSuggestionsList.style.display = "none";
+                    });
+                    multiSuggestionsList.appendChild(item);
+                });
+                if (allSuggestions.size === 0) {
+                    multiSuggestionsList.style.display = "none";
+                }
+            })
+            .catch(error => console.error("Error fetching suggestions:", error));
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!multiInput.contains(e.target) && !multiSuggestionsList.contains(e.target)) {
+            multiSuggestionsList.innerHTML = "";
+            multiSuggestionsList.style.display = "none";
+        }
+    });
+
+    addMultiBtn.addEventListener("click", function () {
+        const loc = multiInput.value.trim();
+        if (!loc) return;
+        if (!validMultiLocation) {
+            alert("Please select a location from the dropdown.");
+            return;
+        }
+        if (selectedMultiLocations.includes(loc)) {
+            alert("Location already added.");
+            return;
+        }
+        selectedMultiLocations.push(loc);
+        updateSelectedMultiLocationsUI();
+        multiInput.value = "";
+        validMultiLocation = false;
+    });
+
+    function updateSelectedMultiLocationsUI() {
+        selectedMultiDiv.innerHTML = "";
+        if (selectedMultiLocations.length === 0) {
+            selectedMultiDiv.style.display = "none";
+            return;
+        }
+        selectedMultiDiv.style.display = "block";
+        selectedMultiLocations.forEach((loc, idx) => {
+            const tag = document.createElement("span");
+            tag.textContent = loc;
+            tag.className = "location-tag";
+            tag.style = "display:inline-block;background:#e0e0e0;padding:3px 8px;margin:2px;border-radius:12px;";
+            const removeBtn = document.createElement("button");
+            removeBtn.textContent = "×";
+            removeBtn.type = "button";
+            removeBtn.style = "margin-left:4px;background:none; border:none;color:#c00;font-weight:bold;cursor:pointer;";
+            removeBtn.onclick = () => {
+                selectedMultiLocations.splice(idx, 1);
+                updateSelectedMultiLocationsUI();
+            };
+            tag.appendChild(removeBtn);
+            selectedMultiDiv.appendChild(tag);
+        });
+    }
+
+    // Step navigation and validation
+    window.nextStep = function (step) {
+        let currentStep = document.querySelector(".form-group:not([style*='display: none'])");
+
+        // Step 1 validation - Location
+        if (step === 2) {
+            if (selectedMultiLocations.length === 0 && !selectedLocation) {
+                alert("Please select at least one location (single or multiple) from the dropdown.");
+                return;
+            }
+            if (selectedMultiLocations.length > 0) {
+                // Show modal for AI suggestion
+                const modal = document.getElementById("ai-suggestion-modal");
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden";
+
+                document.getElementById("ai-yes-btn").onclick = function() {
+                    setAISuggestionField("true");
+                    modal.style.display = "none";
+                    document.body.style.overflow = "";
+                    proceedToNextStep();
+                };
+                document.getElementById("ai-no-btn").onclick = function() {
+                    setAISuggestionField("false");
+                    modal.style.display = "none";
+                    document.body.style.overflow = "";
+                    proceedToNextStep();
+                };
+                return; // Wait for user input
+            }
+            if (!selectedLocation) {
+                alert("Please select a location from the dropdown.");
+                return;
+            }
+        }
+        // Step 2 validation - Dates and Times
+        if (step === 3) {
+            const startDate = document.getElementById("start_date").value;
+            const endDate = document.getElementById("end_date").value;
+            const startTime = document.getElementById("start_time").value;
+            const endTime = document.getElementById("end_time").value;
+
+            if (!startDate || !endDate || !startTime || !endTime) {
+                alert("Please fill in all date and time fields.");
+                return;
+            }
+        }
+
+        // Step 3 validation - Budget
+        if (step === 4) {
+            const budget = document.getElementById("budget").value;
+            if (!budget || budget <= 0) {
+                alert("Please enter a valid budget amount.");
+                return;
+            }
+        }
+
+        // Step 4 validation - Number of People
+        if (step === 5) {
+            const people = document.getElementById("people").value;
+            if (!people || people <= 0) {
+                alert("Please enter a valid number of people.");
+                return;
+            }
+        }
+
+        // If all validations pass, proceed to next step
+        currentStep.style.display = "none";
+        let nextStep = document.getElementById(`step-${step}`);
+        if (nextStep) {
+            nextStep.style.display = "block";
+            nextStep.classList.add('rotating');
+        }
+
+        function setAISuggestionField(val) {
+            let aiField = document.getElementById("allow_ai_suggestions");
+            if (aiField) aiField.remove();
+            aiField = document.createElement("input");
+            aiField.type = "hidden";
+            aiField.name = "allow_ai_suggestions";
+            aiField.id = "allow_ai_suggestions";
+            aiField.value = val;
+            document.getElementById("trip-form").appendChild(aiField);
+        }
+        function proceedToNextStep() {
+            currentStep.style.display = "none";
+            let nextStep = document.getElementById(`step-${step}`);
+            if (nextStep) {
+                nextStep.style.display = "block";
+                nextStep.classList.add('rotating');
+            }
+        }
+    };
+
+    window.prevStep = function (step) {
+        document.querySelectorAll(".form-group").forEach(group => group.style.display = "none");
+        document.getElementById(`step-${step}`).style.display = "block";
+    };
+
+    // On submit, always add multi_locations as hidden input and block if both are empty
+    document.getElementById("trip-form").addEventListener("submit", function(event) {
+        if (
+            (!selectedLocation || !document.getElementById("location").value.trim()) &&
+            (!selectedMultiLocations || selectedMultiLocations.length === 0)
+        ) {
+            alert("Please select at least one location (single or multiple) from the dropdown.");
+            event.preventDefault();
+            return false;
+        }
+        // Add multi_locations as hidden input (even if empty)
+        let hidden = document.getElementById("multi_locations_hidden");
+        if (hidden) hidden.remove();
+        hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.name = "multi_locations";
+        hidden.id = "multi_locations_hidden";
+        hidden.value = JSON.stringify(selectedMultiLocations || []);
+        this.appendChild(hidden);
+
+        // Show loading screen
+        document.getElementById("loadingScreen").style.display = "flex";
+        document.body.classList.add("loading-active");
+
+        event.preventDefault(); // Prevent normal form submit
+
+        const form = this;
+        const formData = new FormData(form);
+
+        fetch(form.action || window.location.pathname, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            } else if (data.error) {
+                alert(data.error);
+                document.getElementById("loadingScreen").style.display = "none";
+                document.body.classList.remove("loading-active");
+            }
+        })
+        .catch(() => {
+            alert("An error occurred while planning your trip.");
+            document.getElementById("loadingScreen").style.display = "none";
+            document.body.classList.remove("loading-active");
+        });
+    });
+
+    // Date/time logic
+    const startDate = document.getElementById("start_date");
+    const endDate = document.getElementById("end_date");
+    const startTime = document.getElementById("start_time");
+    const endTime = document.getElementById("end_time");
+    const today = new Date().toISOString().split("T")[0];
+    startDate.setAttribute("min", today);
+    function getCurrentTime() {
+        let now = new Date();
+        let hours = now.getHours().toString().padStart(2, "0");
+        let minutes = now.getMinutes().toString().padStart(2, "0");
+        return `${hours}:${minutes}`;
+    }
+    startTime.value = getCurrentTime();
+    endTime.value = getCurrentTime();
+    startDate.addEventListener("blur", function () {
+        if (!startDate.value || startDate.value < today) {
+            startDate.value = today;
+        }
+        endDate.min = startDate.value;
+    });
+    startDate.addEventListener("change", function () {
+        endDate.min = startDate.value;
+    });
+    endDate.addEventListener("blur", function () {
+        if (!endDate.value || endDate.value < startDate.value) {
+            endDate.value = startDate.value;
+        }
+    });
+    function validateTime() {
+        let startDateTime = new Date(`${startDate.value}T${startTime.value}`);
+        let endDateTime = new Date(`${endDate.value}T${endTime.value}`);
+        let diffMinutes = (endDateTime - startDateTime) / (1000 * 60);
+        if (endDateTime <= startDateTime || diffMinutes < 30) {
+            endTime.setCustomValidity("End time must be at least 30 minutes after start time.");
+            endTime.reportValidity();
+            endTime.value = new Date(startDateTime.getTime() + 30 * 60 * 1000)
+                .toISOString()
+                .split("T")[1]
+                .substring(0, 5);
+        } else {
+            endTime.setCustomValidity("");
+        }
+    }
+    startTime.addEventListener("change", validateTime);
+    endTime.addEventListener("change", validateTime);
+    endDate.addEventListener("change", validateTime);
+
+    // 3D effect (optional)
+    document.addEventListener("mousemove", function(event) {
+        const mouseX = event.clientX;
+        const mouseY = event.clientY;
+        const centerX = window.innerWidth / 2.5;
+        const centerY = window.innerHeight / 2.5;
+        const deltaX = (mouseX - centerX) / centerX;
+        const deltaY = (mouseY - centerY) / centerY;
+        const formContainer = document.querySelector('.trip-form-container');
+        formContainer.style.transform = `rotateX(${deltaY * 10}deg) rotateY(${deltaX * 10}deg)`;
+    });
+
+    // Loader on page load
+    document.getElementById("loading").style.display = "flex";
+    window.addEventListener("load", function () {
+        document.getElementById("loading").style.display = "none";
+    });
+
+    // Display location in step 2
+    const displayLocation = document.getElementById("display_location");
+    locationInput.addEventListener("input", () => {
+        displayLocation.textContent = locationInput.value;
+    });
+});
+</script>
+</body>
+</html>
+{% endblock %}

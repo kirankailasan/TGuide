@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+{% extends "navbar.html" %}
+{% load static %}
+{% block content %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View trip plan in detail</title>
+    <link rel="stylesheet" href="{% static 'css/saved_plan.css' %}">
+    <link rel="stylesheet" href="{% static 'css/loader.css' %}">
+    
+</head>
+<body>
+    <div id="loading">
+        <div class="loader"></div>
+        <p>Loading... Please wait.</p>
+      </div>
+    <div class="container" id="container">
+        <div class="top">
+            <div class="details">
+                <h1>Trip to {{ trip.location }}</h1>
+                <p><strong>Dates:</strong> {{ trip.start_date|date:"F j, Y" }} to {{ trip.end_date|date:"F j, Y" }}</p>
+                <p><strong>Budget:</strong> ₹{{ trip.budget }}</p>
+                <p><strong>People:</strong> {{ trip.people }}</p>
+                <p><strong>Preferences:</strong> {{ trip.preferences }}</p>
+                <p><strong>Saved On:</strong> {{ trip.saved_at|date:"F j, Y, g:i a" }}</p>
+            </div>
+            
+            {% if trip %}
+                <div class="start">
+                    {% if trip.is_completed %}
+                      <p style="border-radius: 10px; background-color: green; padding: 12px;">Completed</p>
+                    {% else %}
+                    <form method="POST" action="{% url 'view_trip_plan_detail' plan_id=trip.id %}" id="startJourneyForm"  style="margin-top: 20px;">
+                      {% csrf_token %}
+                      <button class="btn btn-success" type="submit">{% if trip.is_started %}Continue Journey{%else%}🚀 Start Your Journey{%endif%}</button>
+                  </form>
+                      {% endif %}
+                </div>
+            {% else %}
+              <p style="color: red;">⚠️ Trip ID missing — cannot start journey.</p>
+            {% endif %}
+        </div>
+    
+    
+    
+    <!-- Tabs -->
+    <div id="trip-tabs" class="tabs" style="margin-bottom: 20px;"></div>
+    
+    
+    <!-- Content -->
+    <div id="trip-content"></div>
+    <div id="place-details-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closePlaceDetails()">&times;</span>
+            <div id="modal-place-details"></div>
+        </div>
+    </div>
+
+    <div class="hotels" style="margin-top: 30px; width: fit-content">
+        <h3>Hotels</h3>
+        {% if trip.selected_hotels %}
+    
+        <ul>
+          {% for hotel in trip.selected_hotels %}
+            <li>
+              
+              <strong>{{ hotel.name }}</strong> - ₹{{ hotel.price }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No hotels selected.</p>
+      {% endif %}
+
+      </div>
+    <form method="POST" action="{% url 'delete_trip_plan' trip.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger" onclick="return confirm('Are you sure you want to delete this plan?');">
+          🗑️ Remove
+        </button>
+      </form>
+
+
+    
+    </div>
+    
+    <a href="{% url 'view_trip_plans' %}">Back to Plans</a>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        // Show the loader
+        document.getElementById("loading").style.display = "flex";
+    
+        // Hide the loader after the page is fully loaded
+        window.addEventListener("load", function () {
+            document.getElementById("loading").style.display = "none";
+            window.waveTwiceThenPose();
+        });
+    });</script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'js/saved_plan.js' %}"></script>
+    <script src="{% static 'js/place_details.js'%}"></script>
+    <script type="module" src="{% static 'js/background.js' %}"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tripPlanHtml = `{{ trip.plan_html|escapejs }}`;
+        let tabContainer = document.getElementById("trip-tabs");
+        let contentContainer = document.getElementById("trip-content");
+    
+        if (!tripPlanHtml.trim()) {
+            contentContainer.innerHTML = "<p>No trip plan available.</p>";
+            return;
+        }
+    
+        // Split days using your format
+        const days = tripPlanHtml.split(/<h1>Day (\d+) \((\d{2}-\d{2}-\d{4})\):<\/h1>/g).filter(x => x.trim() !== "");
+        let dayContentMap = {};
+        let currentDay = null;
+    
+        for (let i = 0; i < days.length; i++) {
+            if (!isNaN(days[i])) {
+                currentDay = `Day ${days[i]} (${days[i + 1]})`;
+                dayContentMap[currentDay] = "";
+                i++;
+            } else if (currentDay) {
+                dayContentMap[currentDay] += days[i];
+            }
+        }
+    
+        let dayList = Object.keys(dayContentMap);
+    
+        // Generate tabs
+        dayList.forEach((label, index) => {
+            const tabBtn = document.createElement("button");
+            tabBtn.classList.add("tab-button");
+            tabBtn.innerText = label;
+            tabBtn.setAttribute("data-day", index + 1);
+            tabBtn.addEventListener("click", () => showDay(index + 1));
+            tabContainer.appendChild(tabBtn);
+    
+            const tabContent = document.createElement("div");
+            tabContent.classList.add("tab-content");
+            tabContent.id = `day-${index + 1}`;
+            tabContent.innerHTML = `<h1>${label}</h1>` + dayContentMap[label];
+            contentContainer.appendChild(tabContent);
+        });
+    
+        function showDay(day) {
+            document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
+    
+            const tabBtn = document.querySelector(`.tab-button[data-day="${day}"]`);
+            const tabContent = document.getElementById(`day-${day}`);
+    
+            if (tabBtn && tabContent) {
+                tabBtn.classList.add("active");
+                tabContent.style.display = "block";
+            }
+        }
+    
+        // Initialize first day
+        if (dayList.length > 0) {
+            showDay(1);
+        }
+    });
+    </script>
+
+
+</body>
+</html>
+
+{% endblock %}

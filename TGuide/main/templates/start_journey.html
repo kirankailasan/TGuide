@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+{% extends "navbar.html" %}
+{% load static %}
+{% block content %}
+
+<html lang="en">
+<head>
+          <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Start journey</title>
+
+  <link rel="stylesheet"href="{% static 'css/start_journey.css' %}">
+  <link rel="stylesheet" href="{% static 'css/loader.css' %}">
+
+
+  </head>
+
+  <body>
+    <div id="loading">
+      <div class="loader"></div>
+      <p>Loading... Please wait.</p>
+    </div>
+
+ <div class="body">
+  <h1>Start Your Journey - Day {{ current_day }}</h1><br>
+
+  <!-- Summary -->
+  <div class="details">
+    <h3>{{ plan.location }} ({{ plan.start_date|date:"F j, Y" }} to {{ plan.end_date|date:"F j, Y" }})</h3>
+    <p><strong>Budget:</strong> ₹{{ plan.budget }} | <strong>People:</strong> {{ plan.people }}</p>
+  </div>
+  
+  <!-- Layout: Map + Progress -->
+  <div class="MP">
+    <!-- Map -->
+    <div style="flex: 2; min-width: 400px;">
+      <button class="map-btn" type="button" id="max-map"><img style="width: 30px" src="{% static 'images/maximize.png' %}"></button>
+      <button  class="map-btn" type="button" id="min-map"><img style="width: 30px" src="{% static 'images/minus.png' %}"></button>
+      <div id="map" ></div>
+    </div>
+  
+    <!-- Progress Checklist -->
+    <div style="flex: 1;">
+      <h4>🧭 Tourist Spots</h4>
+      <ul id="spot-progress" style="list-style-type: none; padding: 0;"></ul>
+    </div>
+  </div>
+  
+  <!-- Day Plan HTML -->
+  <div id="trip-content">
+    {{ journey_day_html|safe }}
+  </div>
+  
+  <!-- Navigation -->
+  <div class="navigation-btns" style="margin-top: 25px; margin-bottom: 100px;">
+    {% if current_day > 1 %}
+      <a href="{% url 'start_journey' plan.id %}?day={{ current_day|add:'-1' }}" class="btn btn-secondary">← Previous Day</a>
+    {% endif %}
+  
+    {% if current_day < total_days %}
+      <a href="{% url 'start_journey' plan.id %}?day={{ current_day|add:'1' }}" class="btn btn-success">Next Day →</a>
+    {% else %}
+      <p><strong style="color: white;">🎉 You’ve reached the final day of your journey!</strong></p>
+    {% endif %}
+  </div>
+ </div>
+
+ <div id="chatbot-model" style="z-index: 4000;">
+  <div id="chatbot">
+      <div id="chatbot-icon" onclick="startChat()"></div>
+      <!-- Chatbot Icon to Open the Chat Window -->
+   
+          
+
+      </div>
+  
+      <!-- Chatbot Window (Initially Hidden) -->
+      <div id="chatbot-container" style="display: none">
+        <div id="chat-container">
+          <div id="chat-window">
+            <button onclick="closeChat()" id="close-chat-btn">✖</button>
+            <div id="chat-messages"></div>
+          </div>
+      
+          <div id="chat-input">
+            <input type="text" id="user-message" placeholder="Type your message..." />
+            <button id="send-message">Send</button>
+          </div>
+        </div>
+      </div>
+  </div>
+
+
+<script>
+  const maxBtn = document.getElementById('max-map');
+  const minBtn = document.getElementById('min-map');
+  const mapDiv = document.getElementById('map');
+
+  maxBtn.addEventListener('click', () => {
+    mapDiv.classList.add('fullscreen-map');
+    maxBtn.classList.add('fullscreen-hidden');
+    minBtn.classList.add('fullscreen-show');
+  });
+
+  minBtn.addEventListener('click', () => {
+    mapDiv.classList.remove('fullscreen-map');
+    maxBtn.classList.remove('fullscreen-hidden');
+    minBtn.classList.remove('fullscreen-show');
+  });
+</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="{% static 'js/chatbot.js' %}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+  // Show the loader
+  document.getElementById("loading").style.display = "flex";
+
+  // Hide the loader after the page is fully loaded
+  window.addEventListener("load", function () {
+      document.getElementById("loading").style.display = "none";
+      window.waveTwiceThenPose();
+  });
+});
+
+function closeChat(){
+  document.getElementById('chatbot-container').style.display="none";
+}
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="module" src="{% static 'js/background.js' %}"></script>
+<!-- Leaflet and Plugins -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.min.js"></script>
+<script src="https://rawcdn.githack.com/bbecquet/Leaflet.RotatedMarker/master/leaflet.rotatedMarker.js"></script>
+
+
+
+<script>
+  const spotNames = JSON.parse('{{ spots_json|escapejs }}');
+  const planId = Number('{{ plan.id|default:"0" }}');
+  const currentDay = Number('{{ current_day|default:"1" }}');
+  const totalDays = Number('{{ total_days|default:"1" }}');
+  
+  let checkInStatus = JSON.parse(localStorage.getItem(`checkins-${planId}-day${currentDay}`)) || {};
+  let spotCoords = [];
+  let currentSpotIndex = Number(localStorage.getItem(`currentSpotIndex-${planId}-day${currentDay}`)) || 0;
+  let blueRoutingControl = null;
+  let greenRoutingControl = null;
+  let userMarker = null;
+  let userCoords = [10.8505, 76.2711];
+  
+  const map = L.map('map').setView(userCoords, 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  
+  // User icon
+  const userIcon = L.divIcon({
+    className: 'custom-user-icon',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+  
+  // First spot icon
+  const firstIcon = L.icon({
+    iconUrl: '/static/images/first.png',
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
+  });
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!navigator.geolocation) {
+      alert("❌ Geolocation is not supported by your browser.");
+      return;
+    }
+  
+    navigator.geolocation.watchPosition(
+      position => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const heading = position.coords.heading;
+        userCoords = [lat, lng];
+  
+        if (!userMarker) {
+          userMarker = L.marker(userCoords, {
+            icon: userIcon,
+            rotationAngle: heading || 0,
+            rotationOrigin: 'center center'
+          }).addTo(map);
+          map.setView(userCoords, 13);
+  
+          fetch(`/get_spots_details/?spots=${JSON.stringify(spotNames)}`)
+            .then(res => res.json())
+            .then(data => {
+              if (!data.spots || data.spots.length === 0) return;
+  
+              const list = document.getElementById("spot-progress");
+  
+              data.spots.forEach((spot, index) => {
+                spotCoords.push([spot.latitude, spot.longitude]);
+                const checked = checkInStatus[spot.name] ? 'checked' : '';
+                const disabled = checkInStatus[spot.name] ? 'disabled' : '';
+                const li = document.createElement("li");
+                li.id = `spot-${index}`;
+                li.innerHTML = `
+                  <input type="checkbox" id="check-${index}" ${checked} ${disabled} onchange="checkIn(${index}, '${spot.name}')">
+                  <label for="check-${index}">${spot.name}</label>
+                `;
+                if (checkInStatus[spot.name]) li.classList.add("checked-in");
+                list.appendChild(li);
+              });
+  
+              // Draw route to current spot
+              if (spotCoords.length > 0) {
+                if (currentSpotIndex === 0) {
+                  drawBlueRoute(userCoords, spotCoords[0], -1, 0);
+                  drawGreenRoute(userCoords, spotCoords[0]);
+                } else if (currentSpotIndex < spotCoords.length) {
+                  drawBlueRoute(spotCoords[currentSpotIndex - 1], spotCoords[currentSpotIndex], currentSpotIndex - 1, currentSpotIndex);
+                  drawGreenRoute(userCoords, spotCoords[currentSpotIndex]);
+                }
+              }
+            });
+  
+        } else {
+          userMarker.setLatLng(userCoords);
+          if (heading !== null) {
+            userMarker.setRotationAngle(heading);
+          }
+        }
+  
+        // Update green route live as user moves
+        if (greenRoutingControl && currentSpotIndex < spotCoords.length) {
+          drawGreenRoute(userCoords, spotCoords[currentSpotIndex]);
+        }
+      },
+      error => {
+        console.error(error);
+        alert("Unable to retrieve your location.");
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 1000,
+        timeout: 10000
+      }
+    );
+  });
+  
+  // Draw BLUE route (fixed)
+  function drawBlueRoute(from, to, fromIndex, toIndex) {
+  if (blueRoutingControl) {
+    map.removeControl(blueRoutingControl);
+  }
+
+  blueRoutingControl = L.Routing.control({
+    waypoints: [L.latLng(from), L.latLng(to)],
+    routeWhileDragging: false,
+    createMarker: (i, wp) => {
+      let spotName;
+      if (i === 0) {
+        spotName = spotNames[fromIndex];
+      } else {
+        spotName = spotNames[toIndex];
+      }
+      let marker;
+      if (i === 0) {
+        marker = L.marker(wp.latLng, { icon: firstIcon });
+      } else {
+        marker = L.marker(wp.latLng);
+      }
+      marker.bindPopup(`<b>${spotName}</b>`, { closeButton: true });
+
+      marker.on('add', () => {
+        marker.openPopup();
+      });
+
+      return marker;
+    },
+    lineOptions: {
+      styles: [{ color: 'blue', weight: 5 }]
+    }
+  }).addTo(map);
+}
+  // Draw GREEN route (dynamic)
+  function drawGreenRoute(from, to) {
+    if (greenRoutingControl) {
+      map.removeControl(greenRoutingControl);
+    }
+  
+    greenRoutingControl = L.Routing.control({
+      waypoints: [L.latLng(from), L.latLng(to)],
+      routeWhileDragging: false,
+      addWaypoints: false,
+      draggableWaypoints: false,
+      createMarker: () => { return null; },
+      lineOptions: {
+        styles: [{ color: 'green', weight: 6, dashArray: '5, 10', opacity: 0.7 }]
+      }
+    }).addTo(map);
+  }
+
+ 
+  // Check-in logic
+  function checkIn(index, name) {
+  const checkbox = document.getElementById(`check-${index}`);
+  const li = document.getElementById(`spot-${index}`);
+
+  if (index === spotCoords.length - 1) {
+    let missedSpots = false;
+    for (let i = 0; i < index; i++) {
+      if (!checkInStatus[spotNames[i]]) {
+        missedSpots = true;
+        break;
+      }
+    }
+
+    if (missedSpots) {
+      alert("⚠️ You must check in all the previous spots before checking in the last spot!");
+      checkbox.checked = false;
+      return; // Prevent check-in if previous spots are missed
+    }
+  }
+
+  if (checkbox.checked) {
+    li.classList.add("checked-in");
+
+      
+    checkInStatus[name] = true;
+    checkbox.disabled = true; // Make the checkbox readonly after check-in
+
+    if (index === currentSpotIndex && index + 1 < spotCoords.length) {
+      drawBlueRoute(spotCoords[index], spotCoords[index + 1], index, index + 1);
+      currentSpotIndex++;
+      drawGreenRoute(userCoords, spotCoords[currentSpotIndex]);
+      localStorage.setItem(`currentSpotIndex-${planId}-day${currentDay}`, currentSpotIndex);
+    }
+    // Show the correct modal for the last spot
+    if (index === spotCoords.length - 1) {
+    if (currentDay === totalDays) {
+      // Last spot of last day
+      document.getElementById("completionModal2").style.display = "flex";
+      document.getElementById("tripCompletedMsg").style.display = "block";
+      // Mark trip as completed in backend
+      fetch('/mark_trip_completed/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ plan_id: planId })
+      });
+    } else {
+      // Last spot of any other day
+      document.getElementById("completionModal1").style.display = "flex";
+    }
+  }
+  }
+  localStorage.setItem(`checkins-${planId}-day${currentDay}`, JSON.stringify(checkInStatus));
+}
+
+// Modal button handler (for completionModal1)
+document.addEventListener("DOMContentLoaded", function() {
+  const nextBtn = document.getElementById("viewNextDayBtn");
+  if (nextBtn) {
+    nextBtn.onclick = function() {
+      window.location.href = nextDayUrl;
+    };
+  }
+});
+  </script>
+  
+<script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var planId = Number('{{ plan.id|default:"0" }}');
+    var currentDayKey = `currentDay-${planId}`;
+    var lastOpenedDay = localStorage.getItem(currentDayKey);
+
+    // If not already on the correct day, redirect to the last opened day
+    if (lastOpenedDay && Number(lastOpenedDay) !== Number("{{ current_day|default:'1' }}")) {
+      window.location.href = window.location.pathname + '?day=' + lastOpenedDay;
+    }
+
+    // Whenever the user navigates to a new day, update localStorage
+    document.querySelectorAll('a.btn-success, a.btn-secondary').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        var href = this.getAttribute('href');
+        var match = href.match(/\?day=(\d+)/);
+        if (match) {
+          var nextDay = Number(match[1]);
+          localStorage.setItem(currentDayKey, nextDay);
+        }
+      });
+    });
+  });
+</script>
+
+  
+
+  <div id="completionModal1" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px 40px; border-radius:12px; text-align:center; box-shadow:0 4px 24px rgba(0,0,0,0.2);">
+      <div id="dayComplete">
+        <h2 id="completionTitle">🎉 Your trip for the day is completed!</h2>
+        <a id="viewNextDayBtn" href="{% url 'start_journey' plan.id %}?day={{ current_day|add:'1' }}" class="btn btn-success" style="margin-top:20px;">View Next Day</a>
+      </div>
+    </div>
+    </div>
+
+  <div id="completionModal2" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px 40px; border-radius:12px; text-align:center; box-shadow:0 4px 24px rgba(0,0,0,0.2);">
+  <div id="tripCompletedMsg" style="display:none; margin-top:20px;">
+    <h3 style="color:green;">🏁 Trip Completed!</h3>
+    <a href="{% url 'home'%}">Go back to home</a>
+  </div>
+</div>
+</div>
+
+  </body>
+  </html>
+
+
+
+{% endblock %}
+
+

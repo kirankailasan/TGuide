@@ -1,0 +1,517 @@
+/* General Body Styling */
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    background-image: url('/static/images/bg1.jpg');
+    background-size: cover;
+    background-position: center; /* Ensure the background is centered */
+    background-attachment: fixed; /* Prevent background from scrolling */
+}
+
+/* Header Styling */
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: rgb(239, 226, 226,0.6);
+    font-size: 2em; /* Ensure the header is prominent */
+}
+
+/* Trip Form Container */
+.trip-form-container {
+    perspective: 1000px;
+    margin: 50px auto;
+    max-width: 600px;
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+    position: relative;
+   
+}
+
+/* Form Group Styling */
+.form-group  {
+    transition: all 0.5s ease;
+}
+
+/* Label, Input, and Button Styling */
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+  
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    color: #333;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    width: 90%;
+}
+
+.form-group input {
+    width: 90%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+   
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+
+
+
+.form-group input:focus {
+    outline: none;
+    border-color: #4a90e2;
+  
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Buttons pop out effect */
+.form-group button, .pn button, .ynbutton {
+    padding: 12px 25px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transform: translateZ(30px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    margin: 10px 5px;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+
+}
+
+.form-group button:hover, .pn button:hover, .ynbutton {
+    background: #3a7bc8;
+    transform: translateZ(40px) scale(1.05);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Animation for rotating effect */
+.rotating {
+    animation: rotateIn 0.6s ease-out forwards;
+}
+
+@keyframes rotateIn {
+    0% {
+        opacity: 0;
+        transform: rotateX(-90deg);
+    }
+    100% {
+        opacity: 1;
+        transform: rotateX(0);
+    }
+}
+
+/* Enhance the 3D effect for date/time section */
+.dt {
+    display: flex;
+    justify-content: space-between;
+    transform-style: preserve-3d;
+}
+
+.start, .end {
+    width: 48%;
+    transform: translateZ(10px);
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+
+
+
+
+
+/* Suggestion List Styling */
+.suggestion-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-top: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background: white;
+    max-height: 150px;
+    overflow-y: auto;
+    border-radius: 0 0 10px 10px;
+}
+
+.suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    font-size: 16px;
+}
+
+.suggestion-item:hover {
+    background: #f5f5f5;
+}
+
+/* Spinner Styling */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 5px solid #ccc;
+    border-top: 5px solid #3399ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+/* Keyframes for Spinner */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Keyframes for Rotate In Animation */
+@keyframes rotateIn {
+    from {
+        transform: rotateY(-90deg);
+        opacity: 0;
+    }
+    to {
+        transform: rotateY(0);
+        opacity: 1;
+    }
+}
+
+.rotating {
+    animation: rotateIn 0.8s ease-out;
+}
+
+/* Loading Screen Styling */
+#loadingScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Dark background */
+    color: white;
+    font-size: 1.5em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000; /* Ensure it’s above everything */
+    display: none; /* Ensure it's hidden initially */
+}
+
+/* Disable interactions while loading */
+.loading-active {
+    pointer-events: none; /* Disables all clicks */
+    overflow: hidden; /* Prevents scrolling */
+}
+
+/* Canvas Styling */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+    .tourist-spots-container{
+        display: none;
+    }
+/* Responsive Design */
+@media (max-width: 768px) {
+    .district-imgs{
+        display: none;
+    }
+    .tourist-spots-container{
+        display: block;
+    }
+    .trip-form-container {
+        
+        width: 90%; /* Adjust width for smaller screens */
+        padding: 20px;
+    }
+
+    .add-spot-btn{
+        opacity: 1 !important;
+        display: block !important;
+    }
+    select {
+        font-size: 12px;
+        padding: 4px;
+    }
+    .tourist-spots-container{
+        max-height: 500px;
+        margin-top: -250px;
+        overflow-y: auto;
+    }
+
+
+
+    h1 {
+        font-size: 1.5em; /* Adjust header size */
+    }
+
+    input, button {
+        font-size: 14px; /* Adjust font size for inputs and buttons */
+    }
+
+    #tourist-spots-container {
+    max-width: 100%;
+    display: flex;
+    flex-wrap: wrap;      /* allow items to wrap into rows */
+    justify-content: center; 
+    gap: 20px;            /* space between items */
+    padding: 20px;
+}
+
+#tourist-spots-container > div {
+    flex: 1 1 200px;      /* grow, shrink, base width 200px */
+    width: 250px;  
+    max-width: 250px;
+    height: 200px;   /* don’t let it get too wide */
+    max-height: 200px;
+    box-sizing: border-box;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    background-color: #f9f9f9;
+}
+#tourist-spots-container div {
+    position: relative;
+    display: inline-block;
+}
+
+#tourist-spots-container img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+#tourist-spots-container div h3{
+    position: absolute;
+    bottom: 5px;
+    padding: 5px;
+    font-size: 0.7em;
+    color: white;
+    background-color: rgb(13, 13, 13, 0.6);
+    border-radius: 10px;
+    padding: 8px;}
+
+.total-form{
+    display: flex; flex-direction: column !important; gap: 20px;
+}
+.dt{
+    display:flex;
+    flex-direction: column !important;
+    width: 90%;
+}
+
+
+}
+
+.total-form{
+    display: flex; flex-direction: row; gap: 20px;
+}
+.dt {
+    display: flex;
+    flex-direction: row; /* Arrange children horizontally */
+    justify-content: space-between; /* Add space between .start and .end */
+    align-items: center; /* Align items vertically */
+    gap: 10px; /* Add spacing between child elements */
+    width: 100%; /* Ensure it takes full width of the container */
+    margin-top: 20px; /* Add spacing from the previous section */
+}
+
+
+
+.pn{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.pn button {
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); 
+}
+
+
+
+.invalid {
+    border: 2px solid red;
+    background-color: #fff0f0;
+}
+
+
+/* district select */
+.district-spots {
+  text-align: center;
+      width: 100%;        /* make sure it spans the width */
+    max-width: 600px;   /* optional: limit width if needed */
+    margin-top: 30px;
+    margin-bottom: 30px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+#district-select {
+  padding: 10px; /* Adds padding inside the select box */
+  border: 1px solid #ccc; /* Adds a light gray border */
+  border-radius: 5px; /* Rounds the corners */
+  font-size: 16px; /* Sets a readable font size */
+  width: 100%; /* Makes the select box take the full width of its container */
+  max-width: 300px; /* Sets a maximum width to prevent it from becoming too wide on larger screens */
+  box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+
+
+}
+
+#district-select:focus {
+  outline: none; /* Removes the default focus outline */
+  border-color: #f9fafb; /* Changes the border color on focus (you can adjust this) */
+  box-shadow: 0 0 5px rgb(255, 255, 255); /* Adds a subtle shadow on focus */
+}
+
+#district-select option {
+  padding: 8px; /* Adds padding to the dropdown options */
+  font-size: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+
+/*img rotate*/
+.ri-container{
+                justify-content: center;
+                display:flex;
+                width: 100%;
+
+}
+.district-imgs {
+    margin-top: 10%;
+    position: relative;
+    width: 350px;
+    height:300px;
+    transform-style: preserve-3d;
+    animation: animate 30s linear infinite;
+    animation-play-state: running; /* <-- important */
+}
+@keyframes animate {
+    0% {
+        transform: perspective(1700px) rotateY(0deg);
+    }
+    100% {
+        transform: perspective(1700px) rotateY(-360deg);
+    }
+}
+.district-imgs span {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    transform-style: preserve-3d;
+    transform-origin: center;
+    transform: rotateY(calc(var(--i) * 45deg)) translateZ(500px);
+}
+.district-imgs span .dbox {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 5px;
+    width: 100%;
+    height: 100%;
+      -webkit-box-reflect: below 0px linear-gradient(transparent, transparent, rgba(0,0,0,0.3));
+}
+
+.district-imgs span .dbox .b {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative; 
+}
+
+
+.district-imgs span .dbox .b {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative; 
+}
+
+.add-spot-btn {
+    display: none;
+    position: absolute;
+    top: 5px !important;
+    right: 8px !important;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.b:hover .add-spot-btn,
+.tourist-spots-container div {
+    opacity: 1;
+}
+
+
+
+.district-imgs span .dbox .b img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.b {
+    position: relative;
+    transition: box-shadow 0.3s ease-in-out;
+}
+.b-label {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 12px;
+    padding: 10px;
+    text-align: center;
+    border-radius: 0 0 10px 10px;
+}
+.b:hover{
+
+
+    box-shadow: 4px 8px 20px rgb(255, 255, 255);
+
+}

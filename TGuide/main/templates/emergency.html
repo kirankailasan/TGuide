@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #fff5f5, #ffe5e5);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            background-color: #d32f2f;
+            color: white;
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            transform: perspective(1000px) rotateX(3deg);
+        }
+        section {
+            background: white;
+            padding: 30px;
+            margin: 30px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            transform: perspective(1000px) rotateX(1deg);
+            transition: transform 0.3s;
+        }
+        section:hover {
+            transform: perspective(1000px) rotateX(0deg) scale(1.02);
+        }
+        h2 {
+            color: #d32f2f;
+            border-bottom: 2px solid #d32f2f;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        .emergency-number {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        .links ul {
+            list-style: none;
+            padding: 0;
+        }
+        .links li {
+            margin: 10px 0;
+        }
+        a {
+            color: #d32f2f;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        a:hover {
+            text-decoration: underline;
+            color: #b71c1c;
+        }
+        button {
+            background: linear-gradient(145deg, #e53935, #c62828);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+        }
+        button:hover {
+            background: linear-gradient(145deg, #c62828, #b71c1c);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        @media (max-width: 600px) {
+            section {
+                margin: 30px 10px 15px 10px;
+                padding: 20px;
+                width: 70%;
+                transform: none;
+            }
+            section:hover {
+                transform: none;
+            }
+            header {
+                transform: none;
+                font-size: 0.7em;
+                width: 90%;
+            }
+            header h1{
+                margin-top: 8vh;
+            }
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <header>
+        <h1>🚨 Emergency Information</h1>
+    </header>
+
+    <section>
+        <h2>📞 Emergency Numbers</h2>
+        <div class="emergency-number">Police: <a href="tel:112">112</a></div>
+        <div class="emergency-number">Ambulance: <a href="tel:911">911</a></div>
+        <div class="emergency-number">Fire Department: <a href="tel:101">101</a></div>
+        <div class="emergency-number">Emergency Contact: <a href="tel:+91">{{ profile.emergency_contact }}</a></div>
+
+        <h2>🏥 Find Nearest Hospital</h2>
+        <button id="findHospitalBtn">Find Nearest Hospital</button>
+
+        <h2>🌴 Kerala Traveler Resources</h2>
+        <div class="links">
+            <ul>
+                <li><a href="https://www.keralatourism.org/" target="_blank">Kerala Tourism Official Website</a></li>
+                <li><a href="https://keralapolice.gov.in/page/tourist-police" target="_blank">Kerala Tourist Police Information</a></li>
+                <li><a href="https://www.ksrtc.in/" target="_blank">Kerala State Road Transport (KSRTC)</a></li>
+                <li><a href="https://www.indianrail.gov.in/enquiry" target="_blank">Indian Railways - Train Enquiry</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <script>
+        document.getElementById('findHospitalBtn').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const query = `https://www.google.com/maps/search/nearest+hospital/@${lat},${lng},15z`;
+                    window.open(query, '_blank');
+                }, error => {
+                    alert('Unable to retrieve your location. Please enable location services and try again.');
+                });
+            } else {
+                alert('Geolocation is not supported by your browser.');
+            }
+        });
+    </script>
+</body>
+</html>

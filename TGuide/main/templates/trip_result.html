@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+{% extends 'navbar.html' %}
+{% load static %}
+
+{% block content %}
+
+<html lang="en">
+<head>
+    <title>Trip result</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your AI-Generated Trip Plan</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/trip_result.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <link rel="stylesheet" href="{% static 'css/loader.css' %}">
+    
+    <style>
+        .tabs { display: flex; margin-bottom: 10px; }
+        .tab-button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background-color: rgb(244, 238, 238, 0.5);
+            margin-right: 5px;
+        }
+        .tab-button.active { background-color: rgb(15, 15, 242, 0.5); color:white; font-weight: bold; }
+        
+        .tab-content.active { display: block; }
+
+       
+        @media (max-width: 800px) {
+
+        
+            .trip-container {
+                display: block !important;
+                flex-direction: column !important;
+                
+            }
+            .left-panel, .right-panel {
+                width: 100% !important;
+                
+            }
+        }
+        .carousel img{
+            border-radius: 30px;
+        }
+    </style>
+</head>
+<body style="margin-top: 60px;">
+    <div id="loading">
+        <div class="loader"></div>
+        <p>Loading... Please wait.</p>
+    </div>
+    <h1 style="color: white; text-align: center;">Your AI-Generated Trip Plan</h1>
+
+    <div class="trip-container">
+        <div class="left-panel">
+            <div class="trip-details">
+                <strong>Trip to:</strong> {{ location }} <br>
+                <strong>Dates:</strong> {{ start_date }} to {{ end_date }} <br>
+                <strong>Budget:</strong> INR {{ budget }} <br>
+                <strong>Number of People:</strong> {{ people }} <br>
+                <strong>Preferences:</strong> {{ preferences }} <br>
+            </div>
+
+
+            <!-- Tab Buttons -->
+            <div id="trip-tabs" class="tabs"></div>
+
+            <!-- Tab Content -->
+            <div id="trip-content"></div>
+        </div>
+        
+        <div class="right-panel">
+    
+            <div id="map" style="height: 500px; width: 100%; z-index: 5;"></div>
+
+            <div id="place-details-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close-btn" onclick="closePlaceDetails()">&times;</span>
+                    <div id="modal-place-details"></div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+
+</div>
+
+<div id="selected-hotel-container" style="display: none; margin-top: 10%">
+ 
+        <input type="text" id="hotel-name" placeholder="Hotel Name" oninput="updateHotel()">
+        <input type="number" id="hotel-price" placeholder="Enter Price" oninput="updateHotel()">
+        <button onclick="removeHotel()">🗑️</button>
+        <div id="hotel-details"></div>
+</div>
+
+<!-- Hotel results container -->
+<div id="hotels-container" style="display: none; margin-top: 15%">
+    <span class="close-hotel" onclick="closeHotelsPopup()">&times;</span>
+    <h2 style="text-align: center;">Available Accommodations</h2>
+    <div id="hotel-results"></div>
+    <button id="view-more-hotels-btn">View More Hotels</button>
+</div>
+
+
+<form action="{% url 'save_trip_plan' %}" method="POST" onsubmit="prepareSelectedHotels(); clearSelectedHotels();">
+    {% csrf_token %}
+    <input type="hidden" name="trip_plan" value="{{ trip_plan|escape }}">
+    <input type="hidden" id="selected-hotels-input" name="selected_hotels" value="">
+    <div class="save-btn">
+        <button  type="submit">Save & View Trip Plan</button>
+    </div>
+</form>
+
+
+<div id="chat-bot" >
+    <!-- Chatbot Icon -->
+
+    <div id="chatbot-model" style="z-index: 9999;">
+        <div id="chatbot">
+            <div id="chatbot-icon" onclick="toggleQuestions()"></div>
+        </div>
+
+    <!-- Chat Questions Popup -->
+    <div id="chat-popup" class="chat-popup" style="display: none; ">
+        <div id="stay-question" style="z-index: 1000;">
+            <p>Do you wish to choose a place for stay?</p>
+            <button onclick="fetchHotels()">Yes</button>
+            <button onclick="hideStayQuestion()">No</button>
+        </div>
+        <div id="chat-question" style="z-index: 1000;">
+            <p>Do you want to chat with me?</p>
+            <button onclick="startChat()">Yes</button>
+            <button onclick="hideChatQuestion()">No</button>
+        </div>
+    </div>
+
+    <!-- Chatbot Container (Hidden by Default) -->
+    <div id="chat-container" style="z-index: 4000; display: none;">
+        <div id="chat-header">
+            <span>Chat with Travel AI</span>
+            <button onclick="closeChat()">✖</button>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-container" class="chat-input" style="display: none;">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+</div>
+</div>
+
+
+    
+
+
+
+<script type="module" src="{% static 'js/car.js' %}"></script>   
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="{% static 'js/chatbot.js' %}"></script>
+<script type="module" src="{% static 'js/background.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    // Show the loader
+    document.getElementById("loading").style.display = "flex";
+
+    // Hide the loader after the page is fully loaded
+    window.addEventListener("load", function () {
+        document.getElementById("loading").style.display = "none";
+        window.waveTwiceThenPose();
+    });
+});</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatContainer = document.getElementById('chat-container');
+    const chatMessages = document.getElementById('chat-messages');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const chatPopup = document.getElementById('chat-popup');
+    const chatStay = document.getElementById('stay-question');
+
+  
+
+    function getCSRFToken() {
+        return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    }
+
+    function addMessage(message, sender = "bot") {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = sender === "user" ? "message user-message" : "message bot-message";
+        messageDiv.textContent = message;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function getBotResponse(message) {
+        fetch('/get_bot_response/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({ message: message }),
+        })
+        .then(response => response.json())
+        .then(data => addMessage(data.response))
+        .catch(() => addMessage("Error: Unable to connect to the chatbot."));
+    }
+
+    sendButton.addEventListener('click', function() {
+        const message = userInput.value.trim();
+        if (message) {
+            addMessage(message, "user");
+            getBotResponse(message);
+            userInput.value = '';
+        }
+    });
+
+    userInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            sendButton.click();
+        }
+    });
+
+    // ✅ Show or Hide Questions Popup
+    window.toggleQuestions = function() {
+        if (chatPopup.style.display === "none" || chatPopup.style.display === "") {
+            // Show both popups again when clicking chatbot icon
+            chatPopup.style.display = "block";
+            document.getElementById("stay-question").style.display = "block";
+            document.getElementById("chat-question").style.display = "block";
+        } else {
+            chatPopup.style.display = "none"; // Hide popups if already visible
+        }
+    };
+
+
+    // ✅ Hide Stay Question
+    window.hideStayQuestion = function() {
+        document.getElementById("stay-question").style.display = "none";
+    };
+
+    // ✅ Hide Chat Question (Keeps chatbot visible)
+    window.hideChatQuestion = function() {
+        document.getElementById("chat-question").style.display = "none";
+        if (document.getElementById("stay-question").style.display === "none") {
+            chatPopup.style.display = "none"; // Hide popup if both questions are gone
+        }
+    };
+
+    // ✅ Start Chat when user clicks "Yes"
+    window.startChat = function() {
+        chatPopup.style.display = "none"; // Hide the popup
+        chatContainer.style.display = "flex"; // Show chat
+        document.getElementById("chat-input-container").style.display = "flex";
+        addMessage("Hello! I'm your Travel assistant. Ask me anything.");
+    };
+
+    // ✅ Close the chat but keep chatbot icon visible
+    window.closeChat = function() {
+        chatContainer.style.display = "none";
+    };
+
+    window.closeStay = function() {
+        chatStay.style.display ="none";
+    }
+
+    if (window.location.pathname.includes("trip_result")) {
+        chatPopup.style.display = "block";
+        chatStay.style.display = "block";
+    }
+
+
+
+   
+});
+    </script>
+
+
+<script>
+    function clearSelectedHotels() {
+    sessionStorage.removeItem("selectedHotels");
+}
+    function fetchHotels() {
+        document.getElementById("hotels-container").style.display = "none"; // Hide initially
+        document.getElementById("stay-question").style.display = "none";
+
+        // ✅ Scroll to hotels-container after fetching
+        
+        fetch(`/fetch_hotels/`)  // Call Django backend
+            .then(response => response.json())
+            .then(data => {
+                let hotelResults = document.getElementById("hotel-results");
+                hotelResults.innerHTML = "";  // Clear previous results
+    
+                if (data.error) {
+                    hotelResults.innerHTML = `<p>${data.error}</p>`;
+                    
+                } else {
+                    data.forEach(hotel => {
+                        let hotelDiv = document.createElement("div");
+                        hotelDiv.className = "hotel-card";
+                        hotelDiv.innerHTML = `
+                            <img src="${hotel.image_url || 'default-hotel.jpg'}" alt="${hotel.name}" class="hotel-image">
+                            <div class="hotel-details">
+                                <h3>${hotel.name}</h3>
+                                <p><strong>Price:</strong> ${hotel.price}</p>
+                                <p><strong>Amenities:</strong> ${hotel.amenities}</p>
+                                <button onclick="selectHotel('${hotel.name}', '${hotel.price}')">Select</button>
+                            </div>
+                        `;
+                        hotelResults.appendChild(hotelDiv);
+                    });
+    
+                    // Show hotels only after they are loaded
+                    document.getElementById("hotels-container").style.display = "block";
+                }
+            })
+            .catch(error => console.error("Error fetching hotels:", error));
+            setTimeout(() => {
+                const hotelsContainer = document.getElementById("hotel-results");
+                if (hotelsContainer) {
+                    hotelsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+                } else {
+                    console.warn("hotels-container not found!");
+                }
+            }, 500); 
+           
+    }
+    
+    function closeHotelsPopup() {
+        document.getElementById("hotels-container").style.display="none";
+    }
+    </script>
+    
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selectedHotelsContainer = document.getElementById("selected-hotel-container");
+    const availableHotels = document.getElementById("hotels-container");
+
+    function selectHotel(name, price) {
+        // Create a unique hotel ID
+        const hotelId = `hotel-${Date.now()}`;
+
+        // Store hotel in sessionStorage
+        const selectedHotels = JSON.parse(sessionStorage.getItem("selectedHotels")) || [];
+        selectedHotels.push({ id: hotelId, name, price });
+        sessionStorage.setItem("selectedHotels", JSON.stringify(selectedHotels));
+
+        // Update UI
+        updateHotelList();
+        availableHotels.style.display = "none";
+    }
+
+    function updateHotelList() {
+        selectedHotelsContainer.innerHTML = ""; // Clear previous content
+        const selectedHotels = JSON.parse(sessionStorage.getItem("selectedHotels")) || [];
+
+        selectedHotels.forEach(hotel => {
+            const hotelDiv = document.createElement("div");
+            hotelDiv.classList.add("hotel-entry");
+            hotelDiv.setAttribute("data-id", hotel.id);
+            hotelDiv.innerHTML = `
+                <input type="text" value="${hotel.name}" class="hotel-name">
+                <input type="number" value="${hotel.price}" class="hotel-price" oninput="updateHotelPrice('${hotel.id}', this.value)">
+                <button onclick="bookHotel(this)" class="book-btn">Book Now</button>
+                <button onclick="removeHotel('${hotel.id}')" class="remove-btn"  style="background: none; border: none; background-color: none">🗑️</button>
+                
+            `;
+            selectedHotelsContainer.appendChild(hotelDiv);
+        });
+
+
+
+        // Add "Add More Hotels" button with a plus icon
+        if (selectedHotels.length > 0) {
+            const addMoreButton = document.createElement("div");
+            addMoreButton.classList.add("add-more-hotels");
+            addMoreButton.innerHTML = `
+                <span class="plus-icon" title="Add More Hotels" ><button onClick ="fetchHotels()">➕</button></span>
+            `;
+            addMoreButton.addEventListener("click", function () {
+                availableHotels.style.display = "block"; // Show hotel options again
+            });
+            selectedHotelsContainer.appendChild(addMoreButton);
+            
+        }
+
+        selectedHotelsContainer.style.display = selectedHotels.length ? "block" : "none";
+        setTimeout(() => {
+                const hotelsContainer = document.getElementById("hotel-results");
+                if (hotelsContainer) {
+                    hotelsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+                } else {
+                    console.warn("hotels-container not found!");
+                }
+            }, 500); 
+    }
+
+    function updateHotelPrice(hotelId, newPrice) {
+        const selectedHotels = JSON.parse(sessionStorage.getItem("selectedHotels")) || [];
+        const hotelIndex = selectedHotels.findIndex(hotel => hotel.id === hotelId);
+
+        if (hotelIndex !== -1) {
+            selectedHotels[hotelIndex].price = newPrice;
+            sessionStorage.setItem("selectedHotels", JSON.stringify(selectedHotels));
+        }
+    }
+
+    function removeHotel(hotelId) {
+        let selectedHotels = JSON.parse(sessionStorage.getItem("selectedHotels")) || [];
+        selectedHotels = selectedHotels.filter(hotel => hotel.id !== hotelId);
+        sessionStorage.setItem("selectedHotels", JSON.stringify(selectedHotels));
+
+        updateHotelList();
+    }
+
+
+    // Load stored hotels on page load
+    updateHotelList();
+
+    // Expose functions globally
+    window.selectHotel = selectHotel;
+    window.removeHotel = removeHotel;
+    window.updateHotelPrice = updateHotelPrice;
+});
+
+function bookHotel(button) {
+    const hotelEntry = button.closest(".hotel-entry"); // Get the nearest hotel entry
+    const hotelName = hotelEntry.querySelector(".hotel-name").value.trim();
+    
+    const location = document.getElementById("location-data")?.dataset.location || "";
+    
+    console.log("location retrieved:", location);
+    if (hotelName) {
+        const searchQuery = location ? `${hotelName} ${location} hotel` : `${hotelName}`;
+        const bookingUrl = `https://www.google.com/travel/search?q=${encodeURIComponent(searchQuery)}`;
+        window.open(bookingUrl, "GoogleTravelBooking", "width=900,height=600,resizable=yes,scrollbars=yes");
+    }else{
+        alert("Please enter a hotel name before booking.");
+    }
+}
+
+</script>
+
+<script>
+    function prepareSelectedHotels() {
+        const selectedHotels = JSON.parse(sessionStorage.getItem("selectedHotels")) || [];
+        document.getElementById("selected-hotels-input").value = JSON.stringify(selectedHotels);
+    }
+    </script>
+
+
+
+<script>
+    function openPlaceDetails(data) {
+        const modal = document.getElementById("place-details-modal");
+        const modalContent = document.getElementById("modal-place-details");
+
+        modalContent.innerHTML = `
+            <h3>${data.name}</h3>
+            <div class="carousel">
+                        <div class="carousel-images" id="image-carousel"></div>
+                        <button class="carousel-button prev" onclick="showPreviousImage()">&#10094;</button>
+                        <button class="carousel-button next" onclick="showNextImage()">&#10095;</button>
+            </div>
+            <p><strong>Description:</strong> ${data.description}</p>
+            <p><strong>Address:</strong> ${data.address}</p>
+            <p><strong>Entrance Fee:</strong> ${data.entrance_fee}</p>
+            <p><strong>Opening Hours:</strong> ${data.opening_hours}</p>
+            
+        `;
+        const imageCarousel = document.getElementById("image-carousel");
+        imageCarousel.innerHTML = ""; // Clear previous images
+        currentImageIndex = 0; // Reset image index
+
+        if (data.image_urls && data.image_urls.length > 0) {
+            data.image_urls.forEach((url, index) => {
+                const img = document.createElement("img");
+                img.src = url;
+                img.alt = `Image ${index + 1} of ${data.name}`;
+                img.style.display = index === 0 ? 'block' : 'none'; // Show only the first image initially
+                imageCarousel.appendChild(img);
+            });
+        } else {
+            // If no images, display a placeholder
+            imageCarousel.innerHTML = "<p>No images available.</p>";
+        }
+
+        modal.style.display = "block";
+    }
+
+    function showPreviousImage() {
+        const images = document.querySelectorAll('#image-carousel img');
+        images[currentImageIndex].style.display = 'none';
+        currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+        images[currentImageIndex].style.display = 'block';
+    }
+
+    function showNextImage() {
+        const images = document.querySelectorAll('#image-carousel img');
+        images[currentImageIndex].style.display = 'none';
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+        images[currentImageIndex].style.display = 'block';
+    }
+
+    function closePlaceDetails() {
+        const modal = document.getElementById("place-details-modal");
+        modal.style.display = "none";
+    }
+
+    // Update the existing AJAX call to use the modal
+    $(document).ready(function () {
+        $(".tourist-spot").click(function (e) {
+            e.preventDefault();
+            let spotName = $(this).data("name");
+
+            $.ajax({
+                url: "/get_place_details/",
+                type: "GET",
+                data: { name: spotName },
+                success: function (data) {
+                    openPlaceDetails(data);
+                }
+            });
+        });
+    });
+</script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    let tabContainer = document.getElementById("trip-tabs");
+    let contentContainer = document.getElementById("trip-content");
+
+    let tripPlanHtml = `{{ trip_plan|escapejs }}`;
+
+    if (!tripPlanHtml.trim()) {
+        console.error("Trip plan is empty.");
+        return;
+    }
+
+    let days = tripPlanHtml.split(/<h1>Day (\d+) \((\d{2}-\d{2}-\d{4})\):<\/h1>/g).filter(section => section.trim() !== "");
+    let dayContentMap = {};
+    let currentDay = null;
+
+    for (let i = 0; i < days.length; i++) {
+        if (!isNaN(days[i])) {
+            currentDay = `Day ${days[i]} (${days[i + 1]})`;
+            dayContentMap[currentDay] = "";
+            i++;
+        } else if (currentDay) {
+            dayContentMap[currentDay] += days[i];
+        }
+    }
+
+    let dayNumbers = Object.keys(dayContentMap);
+
+    if (dayNumbers.length === 0) {
+        console.error("No valid days found in the trip plan.");
+        return;
+    }
+
+    dayNumbers.forEach((day, index) => {
+        let dayNumber = index + 1;
+        let dayMatch = day.match(/Day (\d+) \((\d{2}-\d{2}-\d{4})\)/);
+        let dayLabel = dayMatch ? `Day ${dayMatch[1]}` : `Day ${dayNumber}`;
+        let dateLabel = dayMatch ? dayMatch[2] : "";
+
+        // Create tab button
+        let tabButton = document.createElement("button");
+        tabButton.classList.add("tab-button");
+        tabButton.innerText = `${dayLabel} - ${dateLabel}`;
+        tabButton.setAttribute("data-day", dayNumber);
+        tabButton.addEventListener("click", function () { showDay(dayNumber); });
+        tabContainer.appendChild(tabButton);
+
+        // Create tab content
+        let tabContent = document.createElement("div");
+        tabContent.classList.add("tab-content");
+        tabContent.id = `day-${dayNumber}`;
+        tabContent.innerHTML = `<h1>${day}</h1>` + dayContentMap[day];
+
+        contentContainer.appendChild(tabContent);
+    });
+
+    // Initialize the right-side map container once
+    let map = L.map("map").setView([10.8505, 76.2711], 10); // Default view (Kerala)
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+
+    let currentMarkers = [];
+    let currentRoute = null;
+
+    function initializeMap(day) {
+        let touristSpots = new Set();
+
+        document.querySelectorAll(`#day-${day} .tourist-spot`).forEach((spot) => {
+            touristSpots.add(spot.dataset.name);
+        });
+
+        touristSpots = Array.from(touristSpots);
+
+        if (touristSpots.length === 0) {
+            console.warn(`No tourist spots found for Day ${day}`);
+            return;
+        }
+
+        fetch(`/get_spots_details/?spots=${JSON.stringify(touristSpots)}`)
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.error) {
+                    console.error(data.error);
+                    return;
+                }
+
+                let spots = data.spots;
+                if (spots.length === 0) {
+                    console.warn(`No valid locations found for Day ${day}`);
+                    return;
+                }
+
+                // Remove old markers & route before adding new ones
+                currentMarkers.forEach(marker => map.removeLayer(marker));
+                currentMarkers = [];
+                if (currentRoute) {
+                    map.removeControl(currentRoute);
+                    currentRoute = null;
+                }
+
+                let coordinates = [];
+
+                spots.forEach((spot, index) => {
+                    if (!spot.latitude || !spot.longitude) return;
+
+                    let number = index + 1;
+                    let markerIcon = L.divIcon({
+                        className: "custom-marker",
+                        html: `<div style="
+                            background: rgba(72, 0, 255, 0.3);
+                            color: white;
+                            font-size: 14px;
+                            font-weight: bold;
+                            width: 30px;
+                            height: 30px;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            ">${number}</div>`,
+                        iconSize: [30, 30]
+                    });
+
+                    let marker = L.marker([spot.latitude, spot.longitude], { icon: markerIcon })
+                        .bindPopup(`<b>${number}. ${spot.name}</b>`)
+                        .addTo(map);
+
+                    currentMarkers.push(marker);
+                    coordinates.push([spot.latitude, spot.longitude]);
+                });
+
+                if (coordinates.length > 1) {
+                    currentRoute = L.Routing.control({
+                        waypoints: coordinates.map(coord => L.latLng(coord[0], coord[1])),
+                        routeWhileDragging: true,
+                        lineOptions: {
+                            styles: [{ color: 'blue', opacity: 1, weight: 5 }]
+                        }
+                    }).addTo(map);
+                }
+
+                let bounds = L.latLngBounds(coordinates);
+                map.fitBounds(bounds, { padding: [50, 50] });
+
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 300);
+            })
+            .catch((error) => console.error(`Error fetching spot details for Day ${day}:`, error));
+    }
+
+    function showDay(day) {
+        document.querySelectorAll(".tab-button").forEach(tab => tab.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(content => content.style.display = "none");
+
+        let selectedTab = document.querySelector(`.tab-button[data-day="${day}"]`);
+        let selectedContent = document.getElementById(`day-${day}`);
+
+        if (selectedTab && selectedContent) {
+            selectedTab.classList.add("active");
+            selectedContent.style.display = "block";
+            initializeMap(day);
+        } else {
+            console.error(`Could not find elements for Day ${day}`);
+        }
+    }
+
+    // Show the first day's map by default
+    showDay(1);
+});
+
+
+
+
+
+
+        </script>
+
+<script>
+    document.getElementById("view-more-hotels-btn").addEventListener("click", function () {
+        // Open Google Travel in a popup
+        const location = document.getElementById("location")?.value || "hotels";
+        const url = `https://www.google.com/travel/search?q=${encodeURIComponent(location)}`;
+        window.open(url, "GoogleTravelPopup", "width=900,height=600,resizable=yes,scrollbars=yes");
+
+        // Ensure the container is visible
+        const selectedHotelsContainer = document.getElementById("selected-hotel-container");
+        selectedHotelsContainer.style.display = "block";
+
+        // Select the area where hotels should be added
+        let hotelListContainer = document.getElementById("choose-hotel");
+        if (!hotelListContainer) {
+            hotelListContainer = document.createElement("div");
+            hotelListContainer.id = "choose-hotel";
+            selectedHotelsContainer.appendChild(hotelListContainer);
+        }
+
+        // Create new hotel input fields
+        const hotelDiv = document.createElement("div");
+        const addMoreButton = document.querySelector(".add-more-hotels");
+        hotelDiv.classList.add("hotel-entry");
+        hotelDiv.innerHTML = `
+            <input type="text" class="hotel-name" placeholder="Enter Hotel Name">
+            <input type="number" class="hotel-price" placeholder="Enter Price">
+            <button class="remove-btn">Remove</button>
+        `;
+        
+
+        // Add event listener for remove button
+        hotelDiv.querySelector(".remove-btn").addEventListener("click", function () {
+            hotelDiv.remove();
+        });
+
+        if (addMoreButton) {
+            selectedHotelsContainer.insertBefore(hotelDiv, addMoreButton);
+        } else {
+            selectedHotelsContainer.appendChild(hotelDiv);
+        }
+
+        // Append the new hotel entry inside the list
+        hotelListContainer.appendChild(hotelDiv);
+    });
+</script>
+{% include 'footer.html' %}
+</body>
+</html>
+{% endblock %}

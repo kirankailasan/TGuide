@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+{% extends 'navbar.html' %}
+{% load static %}
+
+{% block content %}
+
+<html lang="en">
+<head>
+  <title>Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to TGuide</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+  
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+
+
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>    
+    /*car*/
+
+
+#three-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      width: 100vw;
+      height: 100vh;
+    }
+    .panel {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      z-index: 1;
+      position: relative;
+      background: transparent;
+    }
+
+
+
+  #dynamic-container {
+    width: 100%;
+    height: 1000px;
+    position: relative;
+  
+
+  }
+
+  #video-popup{
+  position: fixed;
+  top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+  
+  #video-section {
+
+    width: 800px;
+    height: auto;
+    background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  box-shadow: 
+    inset 0 20px 40px rgba(255, 255, 255, 0.05), /* soft top light */
+    inset 0 -30px 60px rgba(0, 0, 0, 0.3),       /* dark inner depth */
+    0 30px 100px rgba(0, 0, 0, 0.5);   
+  border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    background-color: rgb(132, 130, 130, 0.3);
+    padding: 5px;
+    transform: perspective(500px) rotateX(-6deg);
+   
+    transition: transform 0.3s ease-in-out;
+    transform-style: preserve-3d;
+  }
+
+  #video-section video{
+    border-radius: 15px;
+  }
+
+  #video-section:hover {
+    transform: perspective(2000px) rotateX(6deg) rotateY(-3deg);
+    box-shadow: 0 60px 100px rgba(0, 0, 0, 0.8);
+
+  }
+
+  #video-section:before {
+    content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.1), transparent 60%);
+  pointer-events: none;
+  z-index: 2;
+  }
+
+
+
+
+
+
+
+
+
+    #vanta-bg {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -90; /* behind everything */
+}
+
+.tab-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+    gap: 10px;
+}
+.tab-btn {
+    padding: 8px 24px;
+    border: none;
+    background: #eee;
+    color: #333;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+.tab-btn.active {
+    background: #247BA0;
+    color: #fff;
+}
+.tab-content {
+    animation: fadeIn 0.2s;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+    </style>
+
+</head>
+<body id="body" style="height: 2000vh;">
+  
+  <div id="vanta-bg"></div>
+
+   <!-- Loading Animation -->
+   <div id="loading-container">
+    <div class="loader" id="loader"></div>
+  </div>
+
+<div id="home-content" style="display: none">
+  <canvas id="three-canvas"></canvas>
+   
+
+  
+
+
+
+
+
+      
+ 
+              <!-- Dynamic container for inserting HTML -->
+<div id="dynamic-container" style="position: relative;"></div>
+
+
+ 
+
+
+
+
+
+
+
+ 
+
+
+
+   
+
+<!-- Popup Modal for Login/Register with 3D/animated effect -->
+<div class="popup" id="popup" style="z-index:20000">
+  <div class="popup-content popup-3d">
+    <button class="close-popup" id="closePopup">&times;</button>
+    <div class="tab-header">
+      <button id="loginTab" class="tab-btn active">Login</button>
+      <button id="registerTab" class="tab-btn">Register</button>
+    </div>
+    <div class="tab-content" id="loginContent">
+      <h2>Login</h2>
+
+      <div id="error-message"></div>
+      <form id="loginPopup" method="post">
+        {% csrf_token %}
+        <label for="username">Email:</label>
+        <input type="email" id="username" name="username" required placeholder="Enter your email">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required placeholder="Enter your password">
+        <button class="homelogin" type="submit">Login</button>
+    </form>
+      <p>Don't have an account? <a href="#" id="showRegister">Register here</a>.</p>
+    </div>
+    <div class="tab-content" id="registerContent" style="display:none;">
+      <h2>Register</h2>
+      <form method="post" action="{% url 'register' %}">
+        {% csrf_token %}
+        {{ user_form.as_p }}
+        {{ profile_form.as_p }}
+
+        <!-- Email OTP Section -->
+      <div id="otp-section">
+        <button type="button" id="send-otp-btn"  onclick="sendOTP()">Verify email</button>
+        <span id="otp-status"></span><br><br>
+        <div id="otp-input-div" style="display:none;">
+          <input type="text" id="otp" name="otp" placeholder="Enter OTP">
+          <button type="button" onclick="verifyOTP()">Verify OTP</button>
+          
+        </div><br><br>
+      </div>
+      <button type="submit" class="homelogin" id="register-btn" disabled>Register</button>
+      </form>
+      <p>Already have an account? <a href="#" id="showLogin">Login here</a>.</p>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  document.getElementById("loginPopup").addEventListener("submit", function (e) {
+      e.preventDefault();
+  
+      const form = e.target;
+      const formData = new FormData(form);
+  
+      fetch("{% url 'login' %}", {  // Make sure to use the correct URL for login
+          method: "POST",
+          body: formData,
+      })
+      .then(response => response.json())  // Parse response as JSON
+      .then(data => {
+          if (data.success) {
+              window.location.href = data.redirect_url;  // Redirect on success
+          } else {
+              if (window.Notification && Notification.permission === "granted") {
+                  new Notification("Login Failed", { body: data.message });
+              } else {
+                  alert(data.message || "Login failed.");
+              }
+          }
+      })
+      .catch(error => {
+          console.error("Fetch error:", error);
+          alert("Something went wrong.");
+      });
+  });
+  </script>
+<script>
+  window.onload = function() {
+      // Check if the user was created successfully
+      if (document.cookie.indexOf('user_created') !== -1) {
+          // Display a notification
+          alert('User created successfully!');
+          // Remove the cookie
+          document.cookie = 'user_created=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+      }
+  }
+</script>
+<script>
+  function sendOTP() {
+    const email = document.getElementById('id_email').value;
+    document.getElementById("otp-status").innerText = "Sending OTP";
+
+    if (!email) {
+      alert("Please enter your email first.");
+      return;
+    }
+    fetch("{% url 'send_otp' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById("otp-input-div").style.display = "block";
+        document.getElementById("otp-status").innerText = "OTP sent!";
+        document.getElementById('send-otp-btn').innerText="Resend OTP";
+      } else {
+        document.getElementById("otp-status").innerText = data.error || "Failed to send OTP.";
+      }
+    });
+  }
+  
+  function verifyOTP() {
+    const otp = document.getElementById('otp').value;
+    fetch("{% url 'verify_otp_ajax' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({ otp: otp })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById("otp-status").innerText = "✔️Email verified!";
+        document.getElementById("register-btn").disabled = false;
+        document.getElementById("otp-input-div").style.display = "none";
+        document.getElementById("send-otp-btn").style.display = "none";
+      } else {
+        document.getElementById("otp-status").innerText = data.error || "Invalid OTP.";
+        document.getElementById("register-btn").disabled = true;
+      }
+    });
+  }
+  </script>
+
+
+
+
+    
+    <div id="chatbot-model" style="z-index: 4000;">
+    <div id="chatbot">
+        <div id="chatbot-icon" onclick="startChat()"></div>
+        <!-- Chatbot Icon to Open the Chat Window -->
+     
+            
+ 
+        </div>
+        <div id="custom-message" class="custom-message" style="display: none">
+          <p>You can use the controls on my left to scroll the page.</p>
+          <button id="close-message" class="close-message" onclick="step1()">Got it!</button>
+        </div>
+        <div id="message2" class="custom-message" style="display: none;">
+          <p>You can chat with me if you have any doubts.</p>
+          <button id="close-next-message" class="close-message" onclick="step2()">Got it!</button>
+        </div>
+        <div id="message3" class="custom-message" style="display: none;">
+          <p>You are all done login or register to plan your trip.</p>
+          <button id="close-next-message" class="close-message" onclick="closeMessage()">Thanks!</button>
+        </div>
+        <!-- Chatbot Window (Initially Hidden) -->
+        <div id="chatbot-container" style="display: none">
+          <div id="chat-container">
+            <div id="chat-window">
+              <button onclick="closeChat()" id="close-chat-btn">✖</button>
+              <div id="chat-messages"></div>
+            </div>
+        
+            <div id="chat-input">
+              <input type="text" id="user-message" placeholder="Type your message..." />
+              <button id="send-message">Send</button>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div id="custom-overlay" style="display: none;"></div>
+<!-- Scroll Controls -->
+<div class="scroll-controls" id="scroll-controls" >
+  <img src="{% static 'images/brake.png' %}" id="scroll-up" alt="Scroll Up" class="scroll-btn">
+  <img src="{% static 'images/move.png' %}"  id="scroll-down" alt="Scroll Down" class="scroll-btn">
+</div>
+
+<script>
+window.onload = function() {
+  if (!localStorage.getItem('tourShown')) {
+    document.getElementById('custom-message').style.display = 'block';
+    document.getElementById('custom-overlay').style.display = 'block';
+    document.querySelector('.scroll-controls').classList.add('highlight-border');
+  }
+};
+
+function step1() {
+  document.getElementById('custom-message').style.display = 'none';
+  document.getElementById('message2').style.display = 'block';
+  
+  document.querySelector('.scroll-controls').classList.remove('highlight-border');
+}
+
+function step2() {
+  document.getElementById('message2').style.display = 'none';
+  document.getElementById('message3').style.display = 'block';
+}
+
+function closeMessage() {
+  document.getElementById('message3').style.display = 'none';
+  document.getElementById('custom-overlay').style.display = 'none';
+
+  localStorage.setItem('tourShown', 'true');
+}
+</script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const loginTab = document.getElementById("loginTab");
+      const registerTab = document.getElementById("registerTab");
+      const loginContent = document.getElementById("loginContent");
+      const registerContent = document.getElementById("registerContent");
+      const showRegister = document.getElementById("showRegister");
+      const showLogin = document.getElementById("showLogin");
+  
+      loginTab.onclick = function() {
+          loginTab.classList.add("active");
+          registerTab.classList.remove("active");
+          loginContent.style.display = "block";
+          registerContent.style.display = "none";
+      };
+      registerTab.onclick = function() {
+          registerTab.classList.add("active");
+          loginTab.classList.remove("active");
+          loginContent.style.display = "none";
+          registerContent.style.display = "block";
+      };
+      if (showRegister) showRegister.onclick = function(e) {
+          e.preventDefault();
+          registerTab.click();
+      };
+      if (showLogin) showLogin.onclick = function(e) {
+          e.preventDefault();
+          loginTab.click();
+      };
+  });
+  </script>     
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+
+    // ...existing login/register tab code...
+  
+    let scrollInterval;
+    const scrollUp = document.getElementById("scroll-up");
+    const scrollDown = document.getElementById("scroll-down");
+  
+    function startScroll(direction) {
+      stopScroll(); // Prevent multiple intervals
+      scrollInterval = setInterval(() => {
+        window.scrollBy({ top: direction === 'up' ? -20 : 20, behavior: 'auto' });
+      }, 10);
+  
+      if (direction === 'up') {
+        scrollUp.classList.add('active-up');
+      } else {
+        scrollDown.classList.add('active-down');
+      }
+    }
+  
+    function stopScroll() {
+      clearInterval(scrollInterval);
+      scrollUp.classList.remove('active-up');
+      scrollDown.classList.remove('active-down');
+    }
+  
+    // Mouse events
+    scrollUp.addEventListener("mousedown", () => startScroll('up'));
+    scrollDown.addEventListener("mousedown", () => startScroll('down'));
+    document.addEventListener("mouseup", stopScroll);
+    scrollUp.addEventListener("mouseleave", stopScroll);
+    scrollDown.addEventListener("mouseleave", stopScroll);
+  
+    // Touch events for mobile
+    scrollUp.addEventListener("touchstart", (e) => { e.preventDefault(); startScroll('up'); }, {passive: false});
+    scrollDown.addEventListener("touchstart", (e) => { e.preventDefault(); startScroll('down'); }, {passive: false});
+    scrollUp.addEventListener("touchend", stopScroll);
+    scrollDown.addEventListener("touchend", stopScroll);
+    scrollUp.addEventListener("touchcancel", stopScroll);
+    scrollDown.addEventListener("touchcancel", stopScroll);
+  
+    // Prevent context menu and drag on scroll buttons
+    [scrollUp, scrollDown].forEach(btn => {
+      btn.addEventListener('contextmenu', e => e.preventDefault());
+      btn.addEventListener('dragstart', e => e.preventDefault());
+    });
+    [scrollUp, scrollDown].forEach(btn => {
+        btn.addEventListener('contextmenu', e => e.preventDefault());
+        btn.addEventListener('dragstart', e => e.preventDefault());
+        btn.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+        btn.addEventListener('touchend', e => e.preventDefault(), { passive: false });
+        btn.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        btn.addEventListener('mousedown', e => e.preventDefault());
+        btn.addEventListener('mouseup', e => e.preventDefault());
+      });
+  });
+  </script>
+        
+    <script src="{% static 'js/three.r134.min.js' %}"></script>
+  <script src="{% static 'js/vanta.clouds.min.js' %}"></script>      
+<!-- Vanta Clouds2 Background Script (Don't duplicate three.min.js!) -->
+
+<script>
+  VANTA.CLOUDS({
+    el: "#vanta-bg",
+    mouseControls: true,
+    touchControls: true,
+    gyroControls: false,
+    minHeight: 200.00,
+    minWidth: 200.00,
+    skyColor: 0x247BA0 , // Deeper blue
+    cloudColor: 0x95a5a6
+  
+  })
+</script>
+
+
+
+
+
+
+    <script src="{% static 'js/home.js' %}"></script>
+    <script type="module" src="{% static 'js/car.js' %}"></script>   
+    <script src="{% static 'js/three.min.js' %}"></script>
+    <script src="{% static 'js/vanta.net.min.js' %}"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="{% static 'js/chatbot.js' %}"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+
+<script>
+  const dynamicContainer = document.getElementById("dynamic-container");
+  let contentAdded = false;
+
+  window.addEventListener("scroll", () => {
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.body.scrollHeight - window.innerHeight;
+    const scrollPercent = scrollTop / scrollHeight;
+
+    if (scrollPercent >= 0.23 && scrollPercent <= 0.3) {
+      if (!contentAdded) {
+        const section = document.createElement("section");
+        section.id = "video-popup";
+        section.className = "video-popup show";
+        section.innerHTML = `
+   
+              <div id="video-section" style="position:relative;">
+                <video id="section-video" src="{% static 'videos/h1.mp4' %}"
+                  muted autoplay loop playsinline></video>
+                <div class="video-overlay">
+                  <div class="hero-text">
+                    <div class="hero-line active"><strong>Unlock Your Perfect Trip, Powered by AI</strong>
+                      <p>Our AI-powered trip planner crafts unique itineraries tailored to your interests, budget, and travel style.</p></div>
+                    <div class="hero-line">
+                      <strong>Your Dream Trip, Instantly Generated.</strong>
+                      <p>Get instant, customized travel plans and discover hidden gems you won't find anywhere else.</p></div>
+                    <div class="hero-line">
+                      <strong>Say Goodbye to Planning Stress, Hello to Amazing Trips.</strong>
+                      <p>Stop searching endlessly. Start experiencing your perfect trip today.</p></div>
+                  </div>
+                  {% if user.is_authenticated %}
+                    <button class="cta-button"><a href="{% url 'plan_trip' %}" style="text-decoration: none; color: white;">Let's Plan Your Trip</a></button>
+                  {% else %}
+                    <a class="cta-button" style="text-decoration: none; color: white;"href="#" onclick="document.getElementById('navbarLogin').click(); return false;">Login to Plan Trip</a>
+                  {% endif %}
+                  </div>
+              </div>
+
+        `;
+        dynamicContainer.appendChild(section);
+        contentAdded = true;
+      }
+
+      const lines = document.querySelectorAll('.hero-line');
+      let current = 0;
+
+      setInterval(() => {
+        lines[current].classList.remove('active');
+        current = (current + 1) % lines.length;
+        lines[current].classList.add('active');
+      }, 4000); // switch every 3 seconds
+
+
+    } 
+    
+    
+    else {
+      if (contentAdded) {
+        dynamicContainer.innerHTML = "";
+        contentAdded = false;
+      }
+    }
+  });
+</script>
+
+
+<script>
+let content1Added = false;
+let spots = JSON.parse('{{ spots_json|escapejs }}');
+let spotIndex = 0;
+let currentImages = spots[spotIndex].image_urls;
+let currentIndex = 0;
+
+function showSpot(idx) {
+    spotIndex = (idx + spots.length) % spots.length;
+    let spot = spots[spotIndex];
+    currentImages = spot.image_urls;
+    currentIndex = 0;
+    document.getElementById('main-title').innerText = spot.name;
+    document.getElementById('main-image').src = currentImages[currentIndex];
+    clearInterval(window.cycleInterval);
+    startImageCycle();
+}
+
+function startImageCycle() {
+    clearInterval(window.cycleInterval);
+    window.cycleInterval = setInterval(() => {
+        if (currentImages.length > 1) {
+            currentIndex = (currentIndex + 1) % currentImages.length;
+            const img = document.getElementById('main-image');
+            img.style.opacity = 0;
+            setTimeout(() => {
+                img.src = currentImages[currentIndex];
+                img.style.opacity = 1;
+            }, 300);
+        }
+    }, 3000);
+}
+
+window.addEventListener("scroll", () => {
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.body.scrollHeight - window.innerHeight;
+    const scrollPercent = scrollTop / scrollHeight;
+
+    if (scrollPercent >= 0.5 && scrollPercent <= 0.6) {
+        if (!content1Added) {
+            const section = document.createElement("section");
+            section.id = "locations-popup";
+            section.className = "locations-popup show";
+            section.innerHTML = `
+            <div class="locations">
+              <div class="tourist-showcase">
+
+                  <div class="main-display" style="position:relative;">
+
+                      <button id="prev-spot" >&#8592;</button>
+                      <img id="main-image" src="${spots[0].image_urls[0]}" alt="${spots[0].name}">
+                      <button id="next-spot">&#8594;</button>
+                      <h3 id="main-title">${spots[0].name}</h3>
+                          
+                    <div class="places-grid">
+                        {% for spot in spots %}
+                        <div class="place-card"
+                            style="background-image: url('{{ spot.image_urls.0 }}')">
+                            <div class="overlay">{{ spot.name }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                  </div>
+
+              </div>
+            </div>`;
+            dynamicContainer.appendChild(section);
+            content1Added = true;
+
+            // Attach arrow button events
+            document.getElementById('prev-spot').onclick = () => showSpot(spotIndex - 1);
+            document.getElementById('next-spot').onclick = () => showSpot(spotIndex + 1);
+
+            // Show the first spot and start cycling
+            showSpot(0);
+        }
+    } else {
+        if (content1Added) {
+            dynamicContainer.innerHTML = "";
+            content1Added = false;
+            clearInterval(window.cycleInterval);
+        }
+    }
+});
+
+</script>
+
+<script>
+  let content2Added = false;
+
+  window.addEventListener("scroll", () => {
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.body.scrollHeight - window.innerHeight;
+    const scrollPercent = scrollTop / scrollHeight;
+
+    if (scrollPercent >= 0.7 && scrollPercent <= 0.8) {
+      if (!content2Added) {
+        const section = document.createElement("section");
+        section.id = "about-popup";
+      section.className = "about-popup show";
+      section.innerHTML = `
+        <div class="locations">
+          <div class="about-3d-card locations">
+            <h2>About Us</h2>
+            <p>
+              Welcome to <span class="about-highlight">TGuide</span>!<br>
+              We're passionate about creating immersive travel experiences using cutting-edge <span class="about-highlight">3D technology</span> and real-time data.<br>
+              Our mission is to make your journeys smarter, smoother, and more exciting.
+            </p>
+            <p>
+              Whether you're planning your next adventure or exploring new destinations from home, our platform brings the world to your fingertips. 
+              We combine beautiful visuals, interactive guides, and up-to-date information to help you discover, plan, and enjoy every moment of your travels.
+            </p><br><br>
+            <p>
+              <span class="about-highlight">Why choose us?</span><br>
+              <ul style="text-align:left; max-width: 420px; margin: 0 auto; color: #eaf6fb;">
+                <li>Immersive 3D previews of top destinations</li>
+                <li>Personalized recommendations and smart trip planning</li>
+                <li>Real-time updates and local insights</li>
+                <li>Easy-to-use, beautiful interface</li>
+                <li>Passionate support team ready to help</li>
+              </ul><br>
+            </p>
+            <p>
+              Start your journey with us and experience travel like never before!
+            </p>
+          </div>
+        </div>`;
+        dynamicContainer.appendChild(section);
+        content2Added = true;
+      }
+    } else {
+      if (content2Added) {
+        dynamicContainer.innerHTML = "";
+        content2Added = false;
+      }
+    }
+  });
+</script>
+
+
+
+
+<script>
+  let content3Added = false;
+
+  window.addEventListener("scroll", () => {
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.body.scrollHeight - window.innerHeight;
+    const scrollPercent = scrollTop / scrollHeight;
+
+    if (scrollPercent >= 0.9 && scrollPercent <= 1) {
+      if (!content3Added) {
+        const section = document.createElement("section");
+        section.id = "contact-popup";
+      section.className = "contact-popup show";
+      section.innerHTML = `
+        <div class="contact">
+        <h2>Contact Us</h2>
+        <form id="contact-form">
+          <input type="text" name="name" placeholder="Your Name" required>
+          <input type="email" name="email" placeholder="Your Email" required>
+          <textarea name="message" placeholder="Your Message" required></textarea>
+          <button type="submit">Send</button>
+        </form>
+        </div>`;
+        dynamicContainer.appendChild(section);
+        content3Added = true;
+      }
+    } else {
+      if (content3Added) {
+        dynamicContainer.innerHTML = "";
+        content3Added = false;
+      }
+    }
+  });
+</script>
+</div>
+<script>
+  document.addEventListener('submit', function(e) {
+  if (e.target && e.target.id === 'contact-form') {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      name: form.name.value,
+      email: form.email.value,
+      message: form.message.value,
+    };
+    fetch('/contact/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}', // If using Django's CSRF protection
+      },
+      body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(result => {
+      alert('Message sent! Thank you.');
+      form.reset();
+    })
+    .catch(error => {
+      alert('There was an error sending your message.');
+    });
+  }
+});
+</script>
+
+<script>
+let modelsLoaded = 0;
+const totalModels = 3;  // Adjust this according to how many models you're loading
+
+// Function to check when all models are loaded
+function checkModelsLoaded() {
+    modelsLoaded += 1;
+    if (modelsLoaded === totalModels) {
+        // Hide the loader and show the page content
+        document.getElementById('loading-container').style.display = 'none';
+        const homeContent = document.getElementById('home-content');
+        homeContent.style.display = 'block';
+        homeContent.classList.add('fade-in');  // Optional fade-in effect
+    }
+}
+
+
+</script>
+</body>
+</html>
+{% endblock %}

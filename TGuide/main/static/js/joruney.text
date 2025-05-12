@@ -1,0 +1,304 @@
+<script>
+  const spotNames = JSON.parse('{{ spots_json|escapejs }}');
+  const planId = Number('{{ plan.id|default:"0" }}');
+  const currentDay = Number('{{ current_day|default:"1" }}');
+  const totalDays = Number('{{ total_days|default:"1" }}');
+  
+  let checkInStatus = JSON.parse(localStorage.getItem(`checkins-${planId}-day${currentDay}`)) || {};
+  let spotCoords = [];
+  let currentSpotIndex = Number(localStorage.getItem(`currentSpotIndex-${planId}-day${currentDay}`)) || 0;
+  let blueRoutingControl = null;
+  let greenRoutingControl = null;
+  let userMarker = null;
+  let userCoords = [10.8505, 76.2711];
+  
+  const map = L.map('map').setView(userCoords, 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  
+  // User icon
+  const userIcon = L.divIcon({
+    className: 'custom-user-icon',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+  
+  // First spot icon
+  const firstIcon = L.icon({
+    iconUrl: '/static/images/first.png',
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
+  });
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!navigator.geolocation) {
+      alert("❌ Geolocation is not supported by your browser.");
+      return;
+    }
+  
+    navigator.geolocation.watchPosition(
+      position => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const heading = position.coords.heading;
+        userCoords = [lat, lng];
+  
+        if (!userMarker) {
+          userMarker = L.marker(userCoords, {
+            icon: userIcon,
+            rotationAngle: heading || 0,
+            rotationOrigin: 'center center'
+          }).addTo(map);
+          map.setView(userCoords, 13);
+  
+          fetch(`/get_spots_details/?spots=${JSON.stringify(spotNames)}`)
+            .then(res => res.json())
+            .then(data => {
+              if (!data.spots || data.spots.length === 0) return;
+  
+              const list = document.getElementById("spot-progress");
+  
+              data.spots.forEach((spot, index) => {
+                spotCoords.push([spot.latitude, spot.longitude]);
+                const checked = checkInStatus[spot.name] ? 'checked' : '';
+                const disabled = checkInStatus[spot.name] ? 'disabled' : '';
+                const li = document.createElement("li");
+                li.id = `spot-${index}`;
+                li.innerHTML = `
+                  <input type="checkbox" id="check-${index}" ${checked} ${disabled} onchange="checkIn(${index}, '${spot.name}')">
+                  <label for="check-${index}">${spot.name}</label>
+                `;
+                if (checkInStatus[spot.name]) li.classList.add("checked-in");
+                list.appendChild(li);
+              });
+  
+              // Draw route to current spot
+              if (spotCoords.length > 0) {
+                if (currentSpotIndex === 0) {
+                  drawBlueRoute(userCoords, spotCoords[0], -1, 0);
+                  drawGreenRoute(userCoords, spotCoords[0]);
+                } else if (currentSpotIndex < spotCoords.length) {
+                  drawBlueRoute(spotCoords[currentSpotIndex - 1], spotCoords[currentSpotIndex], currentSpotIndex - 1, currentSpotIndex);
+                  drawGreenRoute(userCoords, spotCoords[currentSpotIndex]);
+                }
+              }
+            });
+  
+        } else {
+          userMarker.setLatLng(userCoords);
+          if (heading !== null) {
+            userMarker.setRotationAngle(heading);
+          }
+        }
+  
+        // Update green route live as user moves
+        if (greenRoutingControl && currentSpotIndex < spotCoords.length) {
+          drawGreenRoute(userCoords, spotCoords[currentSpotIndex]);
+        }
+      },
+      error => {
+        console.error(error);
+        alert("Unable to retrieve your location.");
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 1000,
+        timeout: 10000
+      }
+    );
+  });
+  
+  // Draw BLUE route (fixed)
+  function drawBlueRoute(from, to, fromIndex, toIndex) {
+  if (blueRoutingControl) {
+    map.removeControl(blueRoutingControl);
+  }
+
+  blueRoutingControl = L.Routing.control({
+    waypoints: [L.latLng(from), L.latLng(to)],
+    routeWhileDragging: false,
+    createMarker: (i, wp) => {
+      let spotName;
+      if (i === 0) {
+        spotName = spotNames[fromIndex];
+      } else {
+        spotName = spotNames[toIndex];
+      }
+      let marker;
+      if (i === 0) {
+        marker = L.marker(wp.latLng, { icon: firstIcon });
+      } else {
+        marker = L.marker(wp.latLng);
+      }
+      marker.bindPopup(`<b>${spotName}</b>`, { closeButton: true });
+
+      marker.on('add', () => {
+        marker.openPopup();
+      });
+
+      return marker;
+    },
+    lineOptions: {
+      styles: [{ color: 'blue', weight: 5 }]
+    }
+  }).addTo(map);
+}
+  // Draw GREEN route (dynamic)
+  function drawGreenRoute(from, to) {
+    if (greenRoutingControl) {
+      map.removeControl(greenRoutingControl);
+    }
+  
+    greenRoutingControl = L.Routing.control({
+      waypoints: [L.latLng(from), L.latLng(to)],
+      routeWhileDragging: false,
+      addWaypoints: false,
+      draggableWaypoints: false,
+      createMarker: () => { return null; },
+      lineOptions: {
+        styles: [{ color: 'green', weight: 6, dashArray: '5, 10', opacity: 0.7 }]
+      }
+    }).addTo(map);
+  }
+
+ 
+  // Check-in logic
+  function checkIn(index, name) {
+  const checkbox = document.getElementById(`check-${index}`);
+  const li = document.getElementById(`spot-${index}`);
+
+  if (index === spotCoords.length - 1) {
+    let missedSpots = false;
+    for (let i = 0; i < index; i++) {
+      if (!checkInStatus[spotNames[i]]) {
+        missedSpots = true;
+        break;
+      }
+    }
+
+    if (missedSpots) {
+      alert("⚠️ You must check in all the previous spots before checking in the last spot!");
+      checkbox.checked = false;
+      return; // Prevent check-in if previous spots are missed
+    }
+  }
+
+  if (checkbox.checked) {
+    li.classList.add("checked-in");
+
+      
+    checkInStatus[name] = true;
+    checkbox.disabled = true; // Make the checkbox readonly after check-in
+
+    if (index === currentSpotIndex && index + 1 < spotCoords.length) {
+      drawBlueRoute(spotCoords[index], spotCoords[index + 1], index, index + 1);
+      currentSpotIndex++;
+      drawGreenRoute(userCoords, spotCoords[currentSpotIndex]);
+      localStorage.setItem(`currentSpotIndex-${planId}-day${currentDay}`, currentSpotIndex);
+    }
+    // Show the correct modal for the last spot
+    if (index === spotCoords.length - 1) {
+    if (currentDay === totalDays) {
+      // Last spot of last day
+      document.getElementById("completionModal2").style.display = "flex";
+      document.getElementById("tripCompletedMsg").style.display = "block";
+      // Mark trip as completed in backend
+      fetch('/mark_trip_completed/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ plan_id: planId })
+      });
+    } else {
+      // Last spot of any other day
+      document.getElementById("completionModal1").style.display = "flex";
+    }
+  }
+  }
+  localStorage.setItem(`checkins-${planId}-day${currentDay}`, JSON.stringify(checkInStatus));
+}
+
+// Modal button handler (for completionModal1)
+document.addEventListener("DOMContentLoaded", function() {
+  const nextBtn = document.getElementById("viewNextDayBtn");
+  if (nextBtn) {
+    nextBtn.onclick = function() {
+      window.location.href = nextDayUrl;
+    };
+  }
+});
+  </script>
+
+
+
+
+   <div class="bg">
+            <h2 class="value-title" style="margin-top: 10%; text-align: center; color: white; font-size: 40px; text-shadow: 0 10px 10px rgba(0, 0, 0, 0.7)">Best Tourist Spots in Kerala</h2>
+            <div class="banner" >
+  
+                
+                <div class="slider" style="--quantity: 10; color: white;">
+                    <div class="center-image">
+                        <img src="{% static 'images/kerala.png' %}" alt="Center Image">
+                    </div>
+                    
+                    <div class="item" style="--position: 1;">
+                        <div class="content-overlay"><a style="color: white;" href=""><p>Kochi</p></a></div>
+                        <img src="{% static 'images/dragon_1.jpg' %}" alt="Dragon 1">
+                    </div>
+                    <div class="item" style="--position: 2">
+                        <div class="content-overlay"> <a style="color: white;" href=""><p>Munnar</p></a></div>
+                        <img src="{% static 'images/dragon_2.jpg' %}" alt="Dragon 2">
+                    </div>
+                    <div class="item" style="--position: 3">
+                        <div class="content-overlay"><a style="color: white;" href=""> <p>Marari beach</p></a></div>
+                        <img src="{% static 'images/dragon_3.jpg' %}" alt="Dragon 3">
+                    </div>
+                    <div class="item" style="--position: 4">
+                        <div class="content-overlay"><a style="color: white;" href=""> <p>Alappuzha</p></a></div>
+                        <img src="{% static 'images/dragon_4.jpg' %}" alt="Dragon 4">
+                    </div>
+                    <div class="item" style="--position: 5">
+                        <div class="content-overlay"><a style="color: white;" href="">
+                            <p>Wayanad</p></a>
+                            </div>
+                        <img src="{% static 'images/dragon_5.jpg' %}" alt="Dragon 5">
+                    </div>
+                    <div class="item" style="--position: 6">
+                        <div class="content-overlay"><a style="color: white;" href="">
+                            <p>Kovalam beach</p></div>
+                        <img src="{% static 'images/dragon_6.jpg' %}" alt="Dragon 6">
+                    </div>
+                    <div class="item" style="--position: 7">
+                        <div class="content-overlay"><a style="color: white;" href="">
+                            <p>Vadakkumnathan Temple</p></a>
+                            </div>
+                        <img src="{% static 'images/dragon_7.jpg' %}" alt="Dragon 7">
+                    </div>
+                    <div class="item" style="--position: 8">
+                        <div class="content-overlay">
+                            <a style="color: white;" href="">
+                            <p>Sree Padmanabhaswamy Temple</p></a></div>
+                        <img src="{% static 'images/dragon_8.jpg' %}" alt="Dragon 8">
+                    </div>
+                    <div class="item" style="--position: 9">
+                        <div class="content-overlay"><a style="color: white;" href="">
+                            <p>Athirappilly Water Falls</p></a>
+                            </div>
+                        <img src="{% static 'images/dragon_9.jpg' %}" alt="Dragon 9">
+                    </div>
+                    <div class="item" style="--position: 10">
+                        <div class="content-overlay"><a style="color: white;" href="">
+                            <p>Silent Valley National Park</p></div>
+                        <img src="{% static 'images/dragon_10.jpg' %}" alt="Dragon 10">
+                    </div>
+                   
+                </div>
+                <div class="model"></div>
+                
+            </div>
+        </div>

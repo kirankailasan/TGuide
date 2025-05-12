@@ -1,0 +1,195 @@
+{% extends 'navbar.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    body {
+        background-color:  #1f4edc;
+        min-height: 100vh;
+    }
+    .info-page {
+        max-width: 700px;
+        margin: 60px auto 40px auto;
+        background: rgba(30, 60, 114, 0.92);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37), 0 1.5px 10px 0 #2a5298;
+        border-radius: 30px;
+        padding: 40px 32px 32px 32px;
+        color: #e3f2fd;
+        position: relative;
+        perspective: 1200px;
+        transform-style: preserve-3d;
+        animation: float3d 3s ease-in-out infinite alternate;
+    }
+    @keyframes float3d {
+        0% { transform: rotateY(-6deg) rotateX(2deg) scale(1.01);}
+        100% { transform: rotateY(6deg) rotateX(-2deg) scale(1.03);}
+    }
+    .info-page h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #fff;
+        text-shadow: 0 4px 24px #1e3c72, 0 1px 0 #6dd5ed;
+        margin-bottom: 18px;
+        text-align: center;
+    }
+    .info-page p {
+        font-size: 1.18rem;
+        line-height: 1.7;
+        margin-bottom: 18px;
+        color: #e3f2fd;
+        text-align: center;
+    }
+    .info-page ul {
+        background: rgba(45, 85, 170, 0.25);
+        border-radius: 18px;
+        padding: 24px 28px;
+        margin: 0 auto 28px auto;
+        max-width: 500px;
+        box-shadow: 0 2px 12px 0 rgba(30, 60, 114, 0.10);
+        list-style: none;
+    }
+    .info-page ul li {
+        font-size: 1.08rem;
+        margin: 12px 0;
+        padding-left: 0;
+        color: #b3e5fc;
+        position: relative;
+    }
+    .info-page ul li:before {
+        content: "★";
+        color: #6dd5ed;
+        margin-right: 10px;
+        font-size: 1.1rem;
+    }
+    .info-3d-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    .info-card {
+        background: linear-gradient(120deg, #2a5298 60%, #6dd5ed 100%);
+        border-radius: 18px;
+        box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.18);
+        padding: 28px 22px;
+        min-width: 220px;
+        max-width: 270px;
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 500;
+        transform: rotateY(-8deg) scale(1.01);
+        transition: transform 0.3s, box-shadow 0.3s;
+        perspective: 800px;
+        margin-bottom: 10px;
+    }
+    .info-card:hover {
+        transform: rotateY(8deg) scale(1.07);
+        box-shadow: 0 8px 32px 0 #1e3c72;
+        z-index: 2;
+    }
+    .info-card-title {
+        font-size: 1.18rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #b3e5fc;
+        letter-spacing: 1px;
+    }
+    .info-highlight {
+        color: #ffeb3b;
+        font-weight: 700;
+    }
+
+    /* --- Mobile Responsive Styles --- */
+    @media (max-width: 900px) {
+        .info-page {
+            padding: 18px 4vw;
+        }
+        .info-3d-cards {
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+    }
+    @media (max-width: 700px) {
+        .info-page {
+            max-width: 99vw;
+            margin: 16px auto 12px auto;
+            padding: 10px 2vw 12px 2vw;
+            border-radius: 14px;
+        }
+        .info-page h1 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        .info-page p {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        .info-page ul {
+            padding: 8px 6px;
+            font-size: 0.8rem;
+            max-width: 97vw;
+        }
+        .info-page ul li {
+            font-size: 0.8rem;
+            margin: 5px 0;
+        }
+        .info-card {
+            min-width: 0;
+            max-width: 97vw;
+            padding: 8px 6px;
+            font-size: 0.8rem;
+        }
+        .info-card-title {
+            font-size: 0.95rem;
+        }
+    }
+</style>
+<div class="info-page">
+    <h1>What We Do</h1>
+    <p>
+        <span class="info-highlight">KeralaTGuide</span> leverages <b>AI</b> to help you plan your perfect trip to Kerala.<br>
+        We provide <b>personalized itineraries</b>, <b>travel tips</b>, and <b>real-time assistance</b> to make your journey smooth and memorable.
+    </p>
+    <ul>
+        <li>AI-powered travel planning</li>
+        <li>Custom itineraries for every traveler</li>
+        <li>Local insights and recommendations</li>
+        <li>24/7 chatbot support</li>
+        <li>Interactive maps and guides</li>
+        <li>Instant answers to your travel queries</li>
+    </ul>
+    <div class="info-3d-cards">
+        <div class="info-card">
+            <div class="info-card-title">Personalized AI Itineraries</div>
+            Get a trip plan tailored to your interests, budget, and time—instantly!
+        </div>
+        <div class="info-card">
+            <div class="info-card-title">Local Expertise</div>
+            Our recommendations come from Kerala locals and seasoned travelers.
+        </div>
+        <div class="info-card">
+            <div class="info-card-title">24/7 Chatbot Help</div>
+            Ask anything, anytime. Our AI chatbot is always ready to assist you.
+        </div>
+        <div class="info-card">
+            <div class="info-card-title">Smart Maps & Guides</div>
+            Explore with interactive maps, must-see spots, and hidden gems.
+        </div>
+    </div>
+    <p>
+        <span class="info-highlight">Why choose us?</span><br>
+        We blend technology and local knowledge to make your Kerala trip <b>easy, safe, and unforgettable</b>.
+    </p>
+    <p>
+        <b>Ready to start your journey?</b><br>
+        <a href="{% url 'plan_trip' %}" style="color:#ffeb3b;text-decoration:underline;font-weight:600;">Plan your trip now &rarr;</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block footer %}
+    {% include 'footer.html' %}
+{% endblock %}

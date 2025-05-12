@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TGuide{% endblock %}</title>
+     <link rel="shortcut icon" href="{% static 'images/icon.png' %}" type="image/x-icon">
+
+
+    <style>
+       .navbar {
+            width: 100%;
+            padding: 15px 2vw;
+            position: fixed;
+            top: 0;
+            z-index: 999;
+            background: transparent;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 0;
+ 
+        }
+
+        .navbar-container {
+            margin-left: 10px;
+            margin-right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            font-size: 26px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .navbar-links a,
+        .navbar-links button {
+            position: relative;
+            display: inline-block;
+            padding: 10px 22px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            color: white;
+            background: rgba(72, 72, 225, 0.2);
+            border: none;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            box-shadow:
+                inset 0 2px 5px rgba(255, 255, 255, 0.2),
+                inset 0 -4px 10px rgba(0, 0, 0, 0.3),
+                0 6px 20px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease-in-out;
+            transform-style: preserve-3d;
+        }
+
+        .navbar-links a:hover,
+        .navbar-links button:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow:
+                inset 0 2px 8px rgba(255, 255, 255, 0.25),
+                inset 0 -6px 14px rgba(0, 0, 0, 0.4),
+                0 14px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .profile-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+      
+
+        .profile-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: rgba(72, 72, 225, 0.2);
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            border-radius: 10px;
+        }
+
+        .profile-dropdown-content a {
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            border-radius: 10px;
+        }
+
+        .profile-dropdown-content a:hover {
+            background-color: rgba(72, 72, 225, 0.4);
+        }
+
+        .profile-dropdown:hover .profile-dropdown-content {
+            display: block;
+        }
+
+        .profile-pic {
+            width: 45px;
+            height: 45px;
+            padding: 5px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: rgba(72, 72, 225, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow:
+                inset 0 2px 5px rgba(255, 255, 255, 0.2),
+                inset 0 -4px 10px rgba(0, 0, 0, 0.3),
+                0 6px 20px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease-in-out;
+            transform-style: preserve-3d;
+        }
+        .profile-pic:hover{
+          transform: translateY(-4px) scale(1.05);
+            box-shadow:
+                inset 0 2px 8px rgba(255, 255, 255, 0.25),
+                inset 0 -6px 14px rgba(0, 0, 0, 0.4),
+                0 14px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .no{
+            display: none
+        }
+
+        .notification {
+          position: relative;
+          display: inline-block;
+          transition: transform 0.3s ease-in-out;
+        }
+
+        .notification:hover{
+          cursor: pointer;
+          transform: scale(1.1);
+          transition: transform 0.3s ease-in-out;
+        }
+
+        .notif-dot {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          width: 9px;
+          height: 9px;
+          background: #ff3b3b;
+          border-radius: 50%;
+          border: none;
+          box-shadow: 0 0 4px #ff3b3b88;
+          pointer-events: none;
+        }
+        .notification img{
+            width: 30px;
+            height: auto;
+ 
+        }
+
+
+        .burger-icon {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  gap: 5px;
+}
+
+.burger-line {
+  height: 3px;
+  width: 25px;
+  background-color: white;
+  transition: 0.3s;
+}
+        @media (max-width: 768px){
+            .burger-icon {
+                display: flex;
+                flex-direction: column;
+            }
+
+
+            .navbar-links {
+                display: none;
+                flex-direction: column;
+                gap:0;
+                position: absolute;
+                top: 60px;
+                right:20px;
+                width: 200px;
+
+            }
+            .navbar-links .notification{
+              display: none;
+            }
+            .notification{
+              display: block;
+              margin-top: 12px;
+
+            }
+            .no{
+                display: flex;
+                border-radius: 50px;
+            }
+
+            .navbar-links a{
+                margin-top: 0;
+                margin-bottom: 0;
+                width: 150px;
+            }
+            .profile-dropdown{
+                display: none;
+            }
+            .burger-icon .profile-dropdown{
+                display:flex;
+            }
+            .navbar-links.show{
+                display: flex;
+            }
+            *:focus {
+              outline: none;
+              box-shadow: none;
+            }
+
+            * {
+              -webkit-tap-highlight-color: transparent;
+            }
+
+        }
+    
+        #started_trips {
+    display: none;
+    position: fixed;
+    top: 70px; /* Adjust according to your navbar height */
+    right: 60px; /* Position it to the right of the page */
+    background-color: transparent;
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    width: 250px;
+    max-height: 200px;
+    overflow-x: auto;
+    font-family: Arial, sans-serif;
+    z-index:9999;
+    scrollbar-color: white transparent;
+  }
+
+  #started_trips ul {
+    list-style-type: none;
+    padding: 0;
+
+    
+  }
+  #started_trips ul li{
+    background-color: rgb(255, 255, 255, 0.4);
+    border-radius: 10px;
+    padding: 10px;
+  }
+  
+  .trip-item {
+    margin-bottom: 20px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .trip-item:last-child {
+    border-bottom: none;
+  }
+  
+  #started_trips ul .view_trip_btn {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-top: 10px;
+  }
+  
+  #started_trips ul .view_trip_btn:hover {
+    background-color: #0056b3;
+  }
+  
+#started_trips span button {
+  border: none;
+  background: none;
+
+  margin-left: 90%;
+
+}
+
+#started_trips span button:hover{
+  cursor: pointer;
+  color: blue;
+}
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 10px;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.navbar-logo img {
+  width: 40px;
+  height: auto;
+}
+
+.logo-text {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow:
+    1px 1px 0 #999,
+    2px 2px 0 #888,
+    3px 3px 0 #777,
+    4px 4px 0 #666,
+    5px 5px 0 #555;
+  transform: perspective(500px) rotateX(5deg);
+  display: inline-block;
+}
+
+
+
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+
+        <div class="navbar-container">
+            <a href="{% url 'home' %}" class="navbar-logo">
+              <img style="width: 50px;" src="{% static 'images/icon.png' %}" alt="Logo">
+              <span class="logo-text">TGuide</span>
+            </a>
+
+
+                {% if user.is_authenticated %}
+                <div class="burger-icon" id="burger-icon" style=" flex-direction: row; gap: 10px;">
+                  {% if user.is_authenticated and request.resolver_match.url_name == 'home' %}
+                  <div id="notification" class="notification">
+                    <span class="notif-dot"></span>
+                    <img onclick="openTrips(event), closeDot()" src="{% static 'images/bell.png' %}">
+                  </div>
+                {% endif %}
+                    <div class="profile-dropdown">
+                      {% if user.profile.profile_pic %}
+                      <img src="{{ user.profile.profile_pic.url }}" alt="Profile Picture" class="profile-pic">
+                      {% else %}
+                          <img src="{% static 'images/user.png' %}" alt="Default Profile Picture" class="profile-pic">
+                      {% endif %}
+                    </div>
+                  </div>
+
+                {% else%}
+                <div class="burger-icon" id="burger-icon">
+                    <div class="burger-line"></div>
+                    <div class="burger-line"></div>
+                    <div class="burger-line"></div>
+                  </div>
+                {%endif%}
+            <div class="navbar-links" id="navbar-links">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}">Dashboard</a>
+                    <a href="{% url 'plan_trip' %}">Plan a Trip</a>
+                    <a href="{% url 'view_trip_plans' %}">View Trip Plans</a>
+                    <div class="no"><a href="{% url 'profile' %}">Profile</a></div>
+                    <div class="no"><a href="{% url 'faqs' %}">FAQs</a></div>
+                    <div style="background-color: red;" class="no"><a href="{% url 'emergency' %}">Emergency</a></div>
+                    <form class="no" method="POST" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit">Logout</button>
+                    </form>
+
+                {% else %}
+                    <a href="{% url 'login' %}" id="navbarLogin">Login/Register</a>
+
+                {% endif %}
+
+                {% if user.is_authenticated %}
+                {% if user.is_authenticated and request.resolver_match.url_name == 'home' %}
+                  <div id="notification" class="notification">
+                    <span class="notif-dot"></span>
+                    <img onclick="openTrips(event); closeDot()" src="{% static 'images/bell.png' %}">
+                  </div>
+                {% endif %}
+                <div class="profile-dropdown">
+                    {% if user.profile.profile_pic %}
+                        <img src="{{ user.profile.profile_pic.url }}" alt="Profile Picture" class="profile-pic">
+                    {% else %}
+                        <img src="{% static 'images/user.png' %}" alt="Default Profile Picture" class="profile-pic">
+                    {% endif %}
+                    <div class="profile-dropdown-content">
+                        <a href="{% url 'profile' %}">Profile</a>
+                        <a href="{% url 'faqs' %}">FAQs</a>
+                        <a style="background-color: red;" href="{% url 'emergency' %}">Emergency</a>
+                        <form method="POST" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </div>
+                </div>
+                {%endif%}
+            </div>
+        </div>
+    </nav>
+
+
+    <div id="started_trips">
+        {% if trips %}
+          <ul>
+            
+            {% for trip in trips %}
+              <li>
+                <strong>{{ trip.location }}</strong><br>
+                {{ trip.start_date }} - {{ trip.end_date }}<br>
+                {% if trip.id %}
+                  <a href="{% url 'view_trip_plan_detail' plan_id=trip.id %}" class="view_trip_btn">Continue</a>
+                {% else %}
+                  <span class="text-danger">Invalid trip</span>
+                {% endif %}
+              </li><br>
+            {% endfor %}
+          </ul>
+          {% else%}
+          <p>No notifications</p>
+    
+        {% endif %}
+      </div>
+    
+    <!-- Main Content -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+
+        const navbarLogin = document.getElementById("navbarLogin");
+
+        // Add click event listener to the navbar login link
+        if (navbarLogin) {
+            navbarLogin.addEventListener("click", (event) => {
+                event.preventDefault(); // Prevent default behavior (page navigation)
+                popup.style.display = "flex"; // Show the popup
+            });
+        }
+
+        
+    </script>
+<script>
+const burgerIcon = document.getElementById("burger-icon");
+const menuItems = document.getElementById("navbar-links");
+
+burgerIcon.addEventListener("click", () => {
+  menuItems.classList.toggle("show");
+});
+
+document.addEventListener("click", (event) => {
+  const isClickInsideMenu = menuItems.contains(event.target);
+  const isClickOnBurger = burgerIcon.contains(event.target);
+  const menuIsOpen = menuItems.classList.contains("show");
+
+  if (!isClickInsideMenu && !isClickOnBurger && menuIsOpen) {
+    menuItems.classList.remove("show");
+  }
+});
+
+</script>
+<script>
+    function openTrips(event) {
+      event.stopPropagation(); // Prevent the document click from firing
+      document.getElementById("started_trips").style.display = "block";
+    }
+    
+    const notifItems = document.getElementById("started_trips");
+
+    
+    // Close notification when clicking outside
+    document.addEventListener("click", function(event) {
+      if (notifItems.style.display !== "block") return;
+      if (!notifItems.contains(event.target)) {
+        notifItems.style.display = "none";
+      }
+    });
+    
+    // Prevent closing when clicking inside the notification
+    notifItems.addEventListener("click", function(event) {
+      event.stopPropagation();
+
+
+    });
+    </script>
+    <script>
+      function closeDot() {
+        document.querySelectorAll('.notif-dot').forEach(dot => {
+          dot.style.display = "none";
+        });
+      }
+    </script>
+      <!--ping-->
+      <script>
+        function pingRender() {
+            fetch('https://similarity-0dbg.onrender.com', { method: 'GET' })
+                .then(() => console.log('Pinged Render API'))
+                .catch(() => {});
+        }
+        
+        // Ping every 4 minutes while the page is open
+        setInterval(pingRender, 240000);
+        pingRender(); // Initial ping on page load
+        </script>
+</body>
+</html>
+{% block footer %}{% endblock %}

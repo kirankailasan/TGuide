@@ -1,0 +1,178 @@
+{% load static %}
+<html lang="en">
+<head>
+    
+    <title>Footer</title>
+    <style>
+        /* General Footer Styling */
+        footer {
+            background-image: linear-gradient(to right, rgb(120, 207, 227, 0.5), rgb(13, 25, 190, 0.5), rgba(13, 25, 188, 0.5));
+            color: white;
+            text-align: center;
+            padding: 20px 10px;
+            margin-top: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            height: fit-content;
+            position: relative;
+            z-index:0;
+        }
+        .foot {
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+        }
+        .footer1, .footer2, .footer3 {
+            flex: 1;
+            padding: 10px;
+            max-width: 400px;
+            box-sizing: border-box;
+            color: white;
+        }
+        .footer2 p a {
+            transition: all 0.3s ease-in-out;
+        }
+        .footer1 p a {
+            transform: scale(1.5);
+            transition: all 0.3s ease-in-out;
+        }
+        footer a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        footer a:hover {
+            color: #ffcc00;
+        }
+        footer i {
+            margin-right: 5px;
+        }
+        /* Sticky footer for desktop */
+        html, body {
+            height: 100%;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        footer.desktop-footer {
+            margin-top: auto;
+        }
+        /* Hide mobile footer by default */
+        .mobile-footer {
+            display: none;
+        }
+        /* Responsive Footer Styling for Mobile */
+        @media (max-width: 700px) {
+            .foot, .footer3 {
+                display: none !important;
+            }
+            footer.desktop-footer {
+                display: none !important;
+            }
+            .mobile-footer {
+                display: block !important;
+                background-image: linear-gradient(to right, rgb(120, 207, 227, 0.5), rgb(13, 25, 190, 0.5), rgba(13, 25, 188, 0.5));
+                color: white;
+                text-align: left;
+                padding: 12px 10px 8px 10px;
+                width: 100%;
+                box-sizing: border-box;
+                font-size: 0.85rem;
+                position: static;
+                left: 0;
+                bottom: 0;
+            }
+            .mobile-footer .mf-section {
+                margin-bottom: 8px;
+            }
+            .mobile-footer strong {
+                font-size: 1rem;
+            }
+            .mobile-footer a {
+                color: white;
+                text-decoration: underline;
+                font-size: 0.85rem;
+            }
+            .bott{
+              text-align: center;
+            }
+        }
+    </style>
+</head>
+<body class="footer-body">
+    <!-- Desktop Footer -->
+    <footer class="desktop-footer" style="margin-top: 30vh">
+        <div class="foot">
+            <div class="footer1">
+                <div style="margin-bottom: 15px;">
+                    <h3>KeralaTGuide</h3>
+                    <p style="max-width: 600px; margin: 0 auto; font-size: 0.9rem;">
+                        KeralaTGuide is your AI-powered travel planner and trip guide for exploring the beauty of Kerala.
+                    </p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <p>Have any questions? <a href="{% url 'faqs' %}" style="color: white; text-decoration: underline;">Visit our FAQs</a></p>
+                </div>
+            </div>
+            <div class="footer2">
+                <div style="margin-bottom: 15px;">
+                    <p style="display: flex; flex-direction: column;">
+                        <strong>About</strong>
+                        <a href="{% url 'info1' %}">Who we are?</a>
+                        <a href="{% url 'info2' %}">What we do? </a>
+                    </p>
+                    <p>
+                        <a href="mailto:randorer5@gmail.com" style="color: white; text-decoration: none; margin-right: 15px;" target="_blank">
+                            <img src="{%static 'images/email.png' %}" style="width: 20px; height: auto;">
+                        </a>
+                        <a href="https://www.facebook.com/profile.php?id=100006345165315" target="_blank" style="color: white; text-decoration: none; margin-right: 15px;">
+                            <img src="{%static 'images/facebook.png' %}" style="width: 20px; height: auto;">
+                        </a>
+                        <a href="https://www.instagram.com/k.i.r.a.n_k?igsh=M2luYnRiZHdqc24w" target="_blank" style="color: white; text-decoration: none; margin-right: 15px;">
+                            <img src="{%static 'images/instagram.png' %}" style="width: 20px; height: auto;">
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <div class="footer3" style="margin-bottom: 15px;">
+                <p>
+                    <i class="fa fa-phone"></i> <strong>Call Us: </strong><br><br>
+                    <a href="tel:+919876543210" style="color: white; text-decoration: none;">+91 98765 43210</a>
+                </p>
+            </div>
+        </div>
+        <p>&copy; 2025 KeralaTGuide. All rights reserved.</p>
+    </footer>
+    <!-- Mobile Footer -->
+    <footer class="mobile-footer" style="margin-top: 20vh">
+        <div class="mf-section">
+            <strong>KeralaTGuide</strong>
+            <div>Have any questions? <br> <a href="{% url 'faqs' %}">Visit our FAQs</a></div>
+        </div>
+        <div class="mf-section">
+            <strong>About</strong>
+            <div><a href="{% url 'info1' %}"></a>Who we are?</div>
+            <div><a href="{% url 'info2' %}">What we do?</a></div>
+            <div style="margin-top: 8px;">
+                <a href="mailto:randorer5@gmail.com" target="_blank">
+                    <img src="{%static 'images/email.png' %}" style="width: 16px; height: auto; vertical-align: middle;">
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=100006345165315" target="_blank">
+                    <img src="{%static 'images/facebook.png' %}" style="width: 16px; height: auto; vertical-align: middle;">
+                </a>
+                <a href="https://www.instagram.com/k.i.r.a.n_k?igsh=M2luYnRiZHdqc24w" target="_blank">
+                    <img src="{%static 'images/instagram.png' %}" style="width: 16px; height: auto; vertical-align: middle;">
+                </a>
+            </div>
+            <div style="margin-top: 8px;">
+                <i class="fa fa-phone"></i> <strong>Call Us: </strong>
+                <a href="tel:+919876543210" style="color: white; text-decoration: none;">+91 98765 43210</a>
+            </div>
+        </div>
+        <div class="bott" style="font-size: 0.7rem; margin-top: 6px;">&copy; 2025 KeralaTGuide. All rights reserved.</div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+{% extends 'navbar.html' %}
+{% load static %}
+
+{% block content %}
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Search Destinations</title>
+        <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <link rel="stylesheet" href="{% static 'css/loader.css' %}">
+ 
+        <link rel="stylesheet" href="{% static 'css/chatbot.css' %}">
+    </head>
+    <body>
+   
+        <div id="loading">
+            <div class="loader"></div>
+            <p>Loading... Please wait.</p>
+          </div>
+        
+
+        <div class="body">
+            <h1>Search for Places or Tourist Spots</h1>
+    
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search for a destination...">
+            <div class="autocomplete-suggestions"></div>
+            <button id="search-button">Search</button>
+        </div>
+    
+        <div id="results">
+            <div class="left-side">
+                <h2 id="place-name"></h2>
+                
+                <div class="carousel">
+                    <button class="carousel-button prev">&lt;</button>
+                    <div id="image-carousel">
+                        <!-- Images will be dynamically inserted here -->
+                    </div>
+                    <button class="carousel-button next">&gt;</button>
+                </div>
+                <p id="place-description"></p>
+                <p id="place-opening-hours"></p>
+                <p id="place-entrance-fee"></p>
+            </div>
+    
+            <div class="right-side">
+                <div id="map"></div>
+                <p style="display: none" id="place-address"></p>
+            </div>
+        </div>
+
+        <div class="ptc">
+            <a class="plan-trip-btn" href="{% url 'plan_trip' %}">Plan a Trip with our AI</a>
+        </div>
+
+        <div style="margin-top: 100px">
+            <h1 class="anim">Best Tourist Spots in Kerala</h1>
+        </div>
+    <div class="anim">
+        
+            <div class="scene">
+                <div class="cube">
+                    <div class="face front"></div>
+                    <div class="face back"></div>
+                    <div class="face right"></div>
+                    <div class="face left"></div>
+                    <div class="face top"><div class="inner"></div></div>
+                    <div class="face bottom"><div class="inner"></div></div>
+                </div>
+            </div>
+
+                <!-- Text Container -->
+                <div class="text-container">
+                    <div id="face1" class="face1">
+                        <h2>Kochi</h2>
+                        <p>Kochi, also known as Cochin, is a vibrant port city that blends colonial history with modern charm. 
+                            It is famous for its Chinese fishing nets, Jew Town, Mattancherry Palace, and Fort Kochi.
+                        <ul>
+                            <li><b>Best Time to visit: </b> October to March</li>
+                            <li><b>Weather: </b>Warm (17°C to 33°C), monsoon brings heavy rain.</li>
+                            <li><b>Top Attractions: </b>Fort Kochi, Chinese Fishing Nets, Mattancherry Palace, Kerala Folklore Museum, Marine Drive, etc.</li>
+                            <li><b>Activities: </b>
+                            <ul>
+                                <li>Take a heritage walk in Fort Kochi.</li>
+                                <li>Enjoy a sunset cruise in the backwaters.</li>
+                                <li>Try local seafood delicacies at waterfront restaurants.</li>
+                            </ul></li>
+                        </ul></p>
+                    </div>
+                    <div id="face3" class="face3">
+                        <h2>Munnar</h2>
+                        <p>
+                            Munnar is a breathtaking hill station renowned for its expansive tea plantations and misty landscapes in the Western Ghats.
+                            <ul>
+                                <li><b>Best Time to visit: </b>September to March</li>
+                                <li><b>Weather: </b>Cool (15°C to 25°C), with lush greenery during monsoons.</li>
+                                <li><b>Top Attractions: </b>Tea Gardens, Eravikulam National Park, Mattupetty Dam, Echo Point, Anamudi Peak.</li>
+                                <li><b>Activities: </b>
+                                    <ul>
+                                        <li>Stroll through the rolling tea estates and visit the Tea Museum.</li>
+                                        <li>Trek to nearby hills for panoramic vistas.</li>
+                                        <li>Boating at Mattupetty Dam.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </p>
+                    </div>
+
+                    <div id="face2" class="face2">
+                        <h2>Marari Beach</h2>
+                        <p>
+                            Marari Beach is a serene coastal retreat ideal for unwinding on pristine sands, away from the usual hustle.
+                            <ul>
+                                <li><b>Best Time to visit: </b>November to February</li>
+                                <li><b>Weather: </b>Warm and sunny (22°C to 30°C); summers are humid, while monsoons provide a soothing rain.</li>
+                                <li><b>Top Attractions: </b>Marari Beach, nearby fishing villages, local Ayurvedic spas.</li>
+                                <li><b>Activities: </b>
+                                    <ul>
+                                        <li>Relax on the quiet and unspoiled shoreline.</li>
+                                        <li>Experience authentic Ayurvedic treatments.</li>
+                                        <li>Cycle through the charming coastal villages.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </p>
+                    </div>
+                    <div id="face4" class="face4">
+                        <h2>Alappuzha</h2>
+                        <p>
+                            Also known as Alleppey, Alappuzha is famous for its enchanting backwaters, elegant houseboat cruises, and a laid-back coastal vibe.
+                            <ul>
+                                <li><b>Best Time to visit: </b>October to February</li>
+                                <li><b>Weather: </b>Warm (up to 33°C); summers can be hot while monsoons bring heavy rains, enhancing its lush landscapes.</li>
+                                <li><b>Top Attractions: </b>Backwater cruises, Alappuzha Beach, historic lighthouse, temples, and markets.</li>
+                                <li><b>Activities: </b>
+                                    <ul>
+                                        <li>Enjoy an overnight houseboat experience in the backwaters.</li>
+                                        <li>Witness the vibrant Nehru Trophy Boat Race.</li>
+                                        <li>Explore the local culture and heritage sites.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </p>
+                    </div>
+
+                    <div id="face6" class="face6">
+                        <h2>Wayanad</h2>
+                        <p>
+                            Wayanad is a nature lover’s paradise nestled in the Western Ghats, famous for its verdant landscapes, ancient caves, waterfalls, and rich wildlife.
+                            <ul>
+                                <li><b>Best Time to visit: </b>October to May</li>
+                                <li><b>Weather: </b>Pleasant (20°C to 36°C); monsoons intensify its lush beauty.</li>
+                                <li><b>Top Attractions: </b>Edakkal Caves, Banasura Sagar Dam, Chembra Peak, Soochipara Falls, and the Wildlife Sanctuary.</li>
+                                <li><b>Activities: </b>
+                                    <ul>
+                                        <li>Trek to Chembra Peak and see the iconic heart-shaped lake.</li>
+                                        <li>Explore prehistoric carvings in Edakkal Caves.</li>
+                                        <li>Embark on a wildlife safari in the sanctuary.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </p>
+                    </div>
+
+            <div id="face5" class="face5">
+                <h2>Kovalam Beach</h2>
+                <p>
+                    Kovalam Beach is celebrated for its crescent-shaped shores and vibrant atmosphere, offering both relaxation and an array of water sports.
+                    <ul>
+                        <li><b>Best Time to visit: </b>September to March</li>
+                        <li><b>Weather: </b>Warm (up to 37°C) with mild winters and monsoons that bring in lively waves.</li>
+                        <li><b>Top Attractions: </b>Lighthouse Beach, Hawa Beach, marine aquarium, and Ayurvedic spas.</li>
+                        <li><b>Activities: </b>
+                            <ul>
+                                <li>Enjoy water sports such as surfing, parasailing, and snorkeling.</li>
+                                <li>Take a leisurely walk along the picturesque promenade.</li>
+                                <li>Indulge in rejuvenating Ayurvedic therapies by the sea.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+
+
+        <div id="chatbot-model" style="z-index: 4000;">
+            <div id="chatbot">
+                <div id="chatbot-icon" onclick="startChat()"></div>
+                <!-- Chatbot Icon to Open the Chat Window -->
+             
+                    
+          
+                </div>
+            
+                <!-- Chatbot Window (Initially Hidden) -->
+                <div id="chatbot-container" style="display: none">
+                  <div id="chat-container">
+                    <div id="chat-window">
+                      <button onclick="closeChat()" id="close-chat-btn">✖</button>
+                      <div id="chat-messages"></div>
+                    </div>
+                
+                    <div id="chat-input">
+                      <input type="text" id="user-message" placeholder="Type your message..." />
+                      <button id="send-message">Send</button>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            </div>
+
+
+
+
+    
+        <script src="{% static 'js/dashboard.js' %}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="{% static 'js/chatbot.js' %}"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="module" src="{% static 'js/background.js' %}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+  // Show the loader
+  document.getElementById("loading").style.display = "flex";
+
+  // Hide the loader after the page is fully loaded
+  window.addEventListener("load", function () {
+      document.getElementById("loading").style.display = "none";
+      window.waveTwiceThenPose();
+  });
+});
+
+</script>
+    </body>
+    
+</html>
+{% endblock %}
+{% block footer %}
+ {% include 'footer.html' %}
+ {% endblock %}
