@@ -1,4 +1,4 @@
-Requirement Analysis
+
 1. Introduction
 An AI-Driven Personalized Travel Assistant is a web-based platform designed to revolutionize travel planning by automating itinerary creation, offering real-time recommendations, and dynamically adjusting schedules based on user preferences. This system integrates artificial intelligence (AI) and multiple APIs to provide users with seamless trip management, location-based services, and personalized travel suggestions.
 The platform enables users to explore destinations, book accommodations, discover local attractions, and receive travel updates in real time. The system ensures that travelers can plan, track, and adjust their journeys efficiently with minimal effort. It focuses on ensuring a user-friendly, intelligent, and efficient trip-planning experience.
